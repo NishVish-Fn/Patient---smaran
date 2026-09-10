@@ -15,7 +15,7 @@ object NotificationHelper {
 
     const val SERVICE_CHANNEL_ID = "geofence_service_channel"
     const val BREACH_CHANNEL_ID = "geofence_breach_channel"
-    const val GAME_ALARM_CHANNEL_ID = "smaran_game_alarm_channel_v3"
+    const val GAME_ALARM_CHANNEL_ID = "smaran_game_alarm_channel_v4"
     const val SERVICE_NOTIFICATION_ID = 1001
     const val BREACH_NOTIFICATION_ID = 2001
     const val GAME_ALARM_NOTIFICATION_ID = 3001
@@ -198,13 +198,14 @@ object NotificationHelper {
         // Wake screen up physically if phone is asleep
         try {
             val pm = context.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+            @Suppress("DEPRECATION")
             val wakeLock = pm?.newWakeLock(
-                android.os.PowerManager.FULL_WAKE_LOCK or
+                android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
                         android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or
                         android.os.PowerManager.ON_AFTER_RELEASE,
                 "Smaran:GameReminderWakeLock"
             )
-            wakeLock?.acquire(10000L)
+            wakeLock?.acquire(15000L)
         } catch (_: Exception) {}
 
         val alarmSoundUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM)
@@ -214,7 +215,8 @@ object NotificationHelper {
             .setContentTitle("🎮 Smaran Brain Exercise Reminder")
             .setContentText(message)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
+            .setOngoing(true)
             .setContentIntent(fullScreenPendingIntent)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setPriority(NotificationCompat.PRIORITY_MAX)

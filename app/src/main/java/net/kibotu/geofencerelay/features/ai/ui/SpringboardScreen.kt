@@ -381,9 +381,12 @@ fun SpringboardScreen(
         if (isAlarmPopping) {
             AlertDialog(
                 onDismissRequest = {
-                    GameReminderManager.dismissAlarm(context)
-                    isAlarmPopping = false
+                    // Do NOT dismiss alarm on outside touch or accidental gestures
                 },
+                properties = androidx.compose.ui.window.DialogProperties(
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false
+                ),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("🌟 ", fontSize = 24.sp)

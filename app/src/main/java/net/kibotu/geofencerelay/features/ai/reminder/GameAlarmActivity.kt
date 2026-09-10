@@ -54,13 +54,27 @@ class GameAlarmActivity : ComponentActivity() {
     private var wakeLock: PowerManager.WakeLock? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Set lockscreen display and turn screen on before AND after super.onCreate
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
+        @Suppress("DEPRECATION")
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
+        )
+
         super.onCreate(savedInstanceState)
 
         // 1. Physically force display hardware ON from sleep via PowerManager
         try {
             val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
+            @Suppress("DEPRECATION")
             wakeLock = pm?.newWakeLock(
-                PowerManager.FULL_WAKE_LOCK or
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
                         PowerManager.ACQUIRE_CAUSES_WAKEUP or
                         PowerManager.ON_AFTER_RELEASE,
                 "Smaran:AlarmActivityWakeLock"
@@ -71,26 +85,16 @@ class GameAlarmActivity : ComponentActivity() {
             Log.e("GameAlarmActivity", "WakeLock error: ${e.message}")
         }
 
-        // 2. Set all window flags for lockscreen display (crucial on Samsung One UI & Android 8-14)
-        // Note: We DO NOT dismiss keyguard here, because requesting unlock in onCreate shows the PIN/pattern
-        // challenge directly on top of our activity, blocking all Compose touch events!
-        @Suppress("DEPRECATION")
-        window.addFlags(
-            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
-        )
-
+        // Re-confirm window flags after view creation
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         }
 
-        // 3. Start looping alarm audio immediately
+        // 2. Start looping alarm audio immediately
         SoundPlayer.playFindMySound(this, loop = true)
 
-        // 4. Fire high-priority reminder notification as well
+        // 3. Fire high-priority reminder notification as well
         try {
             NotificationHelper.showGameReminderNotification(
                 this,
@@ -153,9 +157,38 @@ class GameAlarmActivity : ComponentActivity() {
         }
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
+        @Suppress("DEPRECATION")
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Do NOT dismiss alarm on back press! Require explicit user button tap (Play or Snooze)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        SoundPlayer.stopSound()
+        if (isFinishing) {
+            SoundPlayer.stopSound()
+        }
         try {
             if (wakeLock?.isHeld == true) {
                 wakeLock?.release()
@@ -170,6 +203,9 @@ private fun LockScreenAlarmView(
     onSnooze: () -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    androidx.activity.compose.BackHandler(enabled = true) {
+        // Do not dismiss alarm on back press/gesture
+    }
     val prefs = remember { context.getSharedPreferences("app_settings", Context.MODE_PRIVATE) }
     val selectedLanguageCode = remember { prefs.getString("selected_language", "en") ?: "en" }
 

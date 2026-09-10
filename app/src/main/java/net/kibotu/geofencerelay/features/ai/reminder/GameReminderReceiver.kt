@@ -24,13 +24,15 @@ class GameReminderReceiver : BroadcastReceiver() {
         // 1. Wake screen up immediately using PowerManager WakeLock
         try {
             val pm = context.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+            @Suppress("DEPRECATION")
             val wakeLock = pm?.newWakeLock(
                 android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
                         android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or
                         android.os.PowerManager.ON_AFTER_RELEASE,
                 "Smaran:AlarmReceiverWakeLock"
             )
-            wakeLock?.acquire(8000L)
+            wakeLock?.acquire(15000L)
+            Log.d("GameReminderReceiver", "Acquired screen wake lock from receiver")
         } catch (e: Exception) {
             Log.e("GameReminderReceiver", "WakeLock error: ${e.message}")
         }
@@ -44,9 +46,11 @@ class GameReminderReceiver : BroadcastReceiver() {
             val alarmIntent = Intent(context, GameAlarmActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
             }
             context.startActivity(alarmIntent)
+            Log.d("GameReminderReceiver", "Started GameAlarmActivity from receiver")
         } catch (e: Exception) {
             Log.e("GameReminderReceiver", "Failed to start GameAlarmActivity directly: ${e.message}", e)
         }

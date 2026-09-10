@@ -88,21 +88,21 @@ object GameReminderManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 alarmManager.setAlarmClock(
                     AlarmManager.AlarmClockInfo(triggerAtMillis, showPendingIntent),
-                    showPendingIntent
+                    pendingIntent
                 )
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, showPendingIntent)
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
             } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, showPendingIntent)
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
             }
-            Log.d("GameReminderManager", "Scheduled next game reminder in $intervalMinutes minutes directly via AlarmClock Activity at $triggerAtMillis")
+            Log.d("GameReminderManager", "Scheduled next game reminder in $intervalMinutes minutes via GameReminderReceiver at $triggerAtMillis")
         } catch (e: Exception) {
             Log.w("GameReminderManager", "setAlarmClock failed (${e.message}), trying fallback...")
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, showPendingIntent)
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
                 } else {
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, showPendingIntent)
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
                 }
             } catch (ex: Exception) {
                 Log.e("GameReminderManager", "Fallback alarm failed: ${ex.message}")
@@ -113,6 +113,16 @@ object GameReminderManager {
     fun triggerTestAlarmInSeconds(context: Context, seconds: Int = 3) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
         val triggerAtMillis = System.currentTimeMillis() + (seconds * 1000L)
+
+        val intent = Intent(context, GameReminderReceiver::class.java).apply {
+            action = "net.kibotu.geofencerelay.ACTION_GAME_REMINDER"
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            REQUEST_CODE + 2,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
 
         val showIntent = Intent(context, GameAlarmActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
@@ -130,14 +140,14 @@ object GameReminderManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 alarmManager.setAlarmClock(
                     AlarmManager.AlarmClockInfo(triggerAtMillis, showPendingIntent),
-                    showPendingIntent
+                    pendingIntent
                 )
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, showPendingIntent)
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
             } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, showPendingIntent)
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
             }
-            Log.d("GameReminderManager", "Scheduled test alarm for $seconds seconds directly to GameAlarmActivity")
+            Log.d("GameReminderManager", "Scheduled test alarm for $seconds seconds via GameReminderReceiver")
         } catch (e: Exception) {
             Log.e("GameReminderManager", "Error scheduling test alarm: ${e.message}", e)
         }
