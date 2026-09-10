@@ -1,15 +1,13 @@
-package net.kibotu.geofencerelay.ui.guardian
+﻿package net.kibotu.geofencerelay.ui.guardian
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.kibotu.geofencerelay.model.BreachAlert
 import net.kibotu.geofencerelay.model.GeofenceZone
@@ -18,24 +16,23 @@ import net.kibotu.geofencerelay.model.RemoteCommand
 import net.kibotu.geofencerelay.relay.MqttRelayClient
 import net.kibotu.geofencerelay.util.BatteryUtils
 import net.kibotu.geofencerelay.util.LocationUtils
+import net.kibotu.geofencerelay.util.NotificationHelper
 import net.kibotu.geofencerelay.util.SoundPlayer
 import java.util.UUID
 
 class GuardianViewModel(application: Application) : AndroidViewModel(application) {
 
     private val relay = MqttRelayClient.shared
-    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
-
     val isConnected = relay.isConnected
     private var guardianEmail: String = ""
 
-    // Default to a sensible location (e.g. Bangalore or Mountain View) until GPS fix arrives
+    // Initial safe zone (anchors to tracker's location once first ping arrives or custom placed)
     private val _zone = MutableStateFlow(
         GeofenceZone(
             id = UUID.randomUUID().toString().take(8),
             name = "My Safe Zone",
-            latitude = 12.9716,
-            longitude = 77.5946,
+            latitude = 0.0,
+            longitude = 0.0,
             radiusMeters = 300.0
         )
     )
@@ -59,61 +56,57 @@ class GuardianViewModel(application: Application) : AndroidViewModel(application
     private val _isPlayingSound = MutableStateFlow(false)
     val isPlayingSound = _isPlayingSound.asStateFlow()
 
-    private var isSimulatingBreach = false
+    private var breachAlertJob: Job? = null
+    private var hasCustomZoneLocation = false
 
-    init {
-        acquireLocalGpsFix()
-    }
+    private fun updateBreachStatus(dist: Double) {
+        val z = _zone.value
+        val breached = if (z.latitude != 0.0) dist > z.radiusMeters else false
+        val wasBreached = _isBreached.value
+        _isBreached.value = breached
 
-    @SuppressLint("MissingPermission")
-    fun acquireLocalGpsFix() {
-        viewModelScope.launch {
-            try {
-                val cts = CancellationTokenSource()
-                fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.token)
-                    .addOnSuccessListener { loc ->
-                        if (loc != null) {
-                            applyDeviceLocation(loc.latitude, loc.longitude, loc.accuracy)
-                        } else {
-                            fusedLocationClient.lastLocation.addOnSuccessListener { last ->
-                                if (last != null) {
-                                    applyDeviceLocation(last.latitude, last.longitude, last.accuracy)
-                                }
-                            }
-                        }
-                    }
-            } catch (_: Exception) {}
+        if (breached) {
+            if (!wasBreached || breachAlertJob == null || !breachAlertJob!!.isActive) {
+                startRepeatingBreachAlerts()
+            }
+        } else {
+            // Target is back inside radius! Immediately clear breach, sound, and notifications
+            stopRepeatingBreachAlerts()
         }
     }
 
-    private fun applyDeviceLocation(lat: Double, lon: Double, accuracy: Float) {
-        viewModelScope.launch {
+    private fun startRepeatingBreachAlerts() {
+        breachAlertJob?.cancel()
+        breachAlertJob = viewModelScope.launch {
             val app = getApplication<Application>()
-            val battery = BatteryUtils.getBatteryStatus(app)
-            val address = LocationUtils.getReadableAddress(app, lat, lon)
+            while (_isBreached.value) {
+                val ping = _targetPing.value
+                val zoneName = _zone.value.name
+                val dist = ping?.distanceFromCenter ?: 0.0
+                val device = ping?.deviceName ?: "Tracked Device"
 
-            // Center safe zone on real device location
-            _zone.value = _zone.value.copy(
-                latitude = lat,
-                longitude = lon
-            )
+                NotificationHelper.showBreachNotification(app, zoneName, dist, device)
+                SoundPlayer.playFindMySound(app)
 
-            // Populate initial device ping so UI immediately shows this device's location
-            if (_targetPing.value == null) {
-                _targetPing.value = LocationPing(
-                    deviceId = "local_device",
-                    deviceName = Build.MODEL ?: "This Device",
-                    latitude = lat,
-                    longitude = lon,
-                    accuracy = accuracy,
-                    batteryLevel = battery.level,
-                    isCharging = battery.isCharging,
-                    address = address,
-                    isBreach = false,
-                    distanceFromCenter = 0.0,
-                    timestamp = System.currentTimeMillis()
-                )
-                triggerRecenter()
+                // Repeat notification popup & alarm every 15 seconds while phone is locked/off
+                delay(15_000L)
+            }
+        }
+    }
+
+    private fun stopRepeatingBreachAlerts() {
+        breachAlertJob?.cancel()
+        breachAlertJob = null
+        val app = getApplication<Application>()
+        NotificationHelper.cancelBreachNotification(app)
+        SoundPlayer.stopSound()
+        _latestAlert.value = null
+    }
+
+    fun reconnect() {
+        if (guardianEmail.isNotEmpty()) {
+            viewModelScope.launch {
+                relay.connect(guardianEmail)
             }
         }
     }
@@ -121,39 +114,58 @@ class GuardianViewModel(application: Application) : AndroidViewModel(application
     fun init(email: String) {
         guardianEmail = email.trim().lowercase()
         viewModelScope.launch {
-            relay.connect(guardianEmail)
+            // Continuous watchdog: ensures relay reconnects automatically if network drops
+            launch {
+                while (isActive) {
+                    if (guardianEmail.isNotEmpty() && (!relay.isConnected.value || !relay.isClientConnected)) {
+                        relay.connect(guardianEmail)
+                    }
+                    delay(3500L)
+                }
+            }
 
-            // Listen for active zone
+            // Listen for active zone from broker
             launch {
                 relay.activeZone.collect { existingZone ->
                     if (existingZone != null && existingZone.latitude != 0.0) {
+                        hasCustomZoneLocation = true
                         _zone.value = existingZone
                     }
                 }
             }
 
-            // Listen for live location pings from remote target
+            // Listen for live location pings from remote target device
             launch {
                 relay.latestPing.collect { ping ->
-                    if (!isSimulatingBreach) {
-                        _targetPing.value = ping
-                        _isBreached.value = ping.isBreach
-                        if (_zone.value.latitude == 0.0 && ping.latitude != 0.0) {
-                            _zone.value = _zone.value.copy(
-                                latitude = ping.latitude,
-                                longitude = ping.longitude
-                            )
-                        }
+                    var z = _zone.value
+                    // If safe zone center not set yet, anchor it to the tracker's initial position
+                    if (!hasCustomZoneLocation && (z.latitude == 0.0 || z.longitude == 0.0) && ping.latitude != 0.0) {
+                        z = z.copy(latitude = ping.latitude, longitude = ping.longitude)
+                        _zone.value = z
                     }
+
+                    val dist = if (z.latitude != 0.0 && ping.latitude != 0.0) {
+                        LocationUtils.distanceMeters(ping.latitude, ping.longitude, z.latitude, z.longitude)
+                    } else 0.0
+
+                    updateBreachStatus(dist)
+                    _targetPing.value = ping.copy(
+                        distanceFromCenter = dist,
+                        isBreach = _isBreached.value
+                    )
                 }
             }
 
             // Listen for breach alerts
             launch {
                 relay.breachAlert.collect { alert ->
-                    if (!isSimulatingBreach) {
-                        _latestAlert.value = alert
-                        _isBreached.value = alert.status != "RESOLVED_INSIDE"
+                    _latestAlert.value = alert
+                    if (alert.status == "RESOLVED_INSIDE") {
+                        updateBreachStatus(0.0)
+                    } else {
+                        val ping = _targetPing.value
+                        val dist = ping?.distanceFromCenter ?: (alert.distanceMeters)
+                        updateBreachStatus(dist)
                     }
                 }
             }
@@ -161,11 +173,21 @@ class GuardianViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun updateCenter(lat: Double, lon: Double) {
+        hasCustomZoneLocation = true
         _zone.value = _zone.value.copy(
             latitude = lat,
             longitude = lon,
             updatedAt = System.currentTimeMillis()
         )
+        _targetPing.value?.let { ping ->
+            val dist = LocationUtils.distanceMeters(ping.latitude, ping.longitude, lat, lon)
+            updateBreachStatus(dist)
+            _targetPing.value = ping.copy(
+                distanceFromCenter = dist,
+                isBreach = _isBreached.value
+            )
+        }
+        broadcastZone()
     }
 
     fun updateRadius(radius: Double) {
@@ -173,6 +195,15 @@ class GuardianViewModel(application: Application) : AndroidViewModel(application
             radiusMeters = radius,
             updatedAt = System.currentTimeMillis()
         )
+        _targetPing.value?.let { ping ->
+            val dist = LocationUtils.distanceMeters(ping.latitude, ping.longitude, _zone.value.latitude, _zone.value.longitude)
+            updateBreachStatus(dist)
+            _targetPing.value = ping.copy(
+                distanceFromCenter = dist,
+                isBreach = _isBreached.value
+            )
+        }
+        broadcastZone()
     }
 
     fun updateName(name: String) {
@@ -180,9 +211,11 @@ class GuardianViewModel(application: Application) : AndroidViewModel(application
             name = name,
             updatedAt = System.currentTimeMillis()
         )
+        broadcastZone()
     }
 
     fun broadcastZone() {
+        if (guardianEmail.isBlank()) return
         viewModelScope.launch {
             val success = relay.publishZone(guardianEmail, _zone.value)
             _broadcastSuccess.value = success
@@ -223,50 +256,8 @@ class GuardianViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun toggleBreachSimulation() {
-        isSimulatingBreach = !isSimulatingBreach
-        val current = _targetPing.value ?: return
-        val z = _zone.value
-
-        if (isSimulatingBreach) {
-            // Move target 450m outside the safe zone
-            val offsetLat = z.latitude + 0.0040 // ~450 meters north
-            val offsetLon = z.longitude + 0.0030
-            val dist = LocationUtils.distanceMeters(offsetLat, offsetLon, z.latitude, z.longitude)
-
-            _isBreached.value = true
-            _targetPing.value = current.copy(
-                latitude = offsetLat,
-                longitude = offsetLon,
-                isBreach = true,
-                speed = 4.2f, // 15 km/h
-                distanceFromCenter = dist,
-                address = "Outside Safe Zone Boundary",
-                timestamp = System.currentTimeMillis()
-            )
-            _latestAlert.value = BreachAlert(
-                deviceId = current.deviceId,
-                geofenceName = z.name,
-                distanceMeters = dist,
-                status = "BREACH_STARTED"
-            )
-            triggerRecenter()
-            playSound()
-        } else {
-            // Return back inside safe zone
-            _isBreached.value = false
-            _targetPing.value = current.copy(
-                latitude = z.latitude,
-                longitude = z.longitude,
-                isBreach = false,
-                speed = 0f,
-                distanceFromCenter = 0.0,
-                address = "Inside ${z.name}",
-                timestamp = System.currentTimeMillis()
-            )
-            _latestAlert.value = null
-            stopSound()
-            triggerRecenter()
-        }
+    override fun onCleared() {
+        super.onCleared()
+        stopRepeatingBreachAlerts()
     }
 }

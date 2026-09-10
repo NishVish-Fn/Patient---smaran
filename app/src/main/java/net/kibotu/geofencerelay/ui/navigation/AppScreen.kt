@@ -1,7 +1,8 @@
-package net.kibotu.geofencerelay.ui.navigation
+﻿package net.kibotu.geofencerelay.ui.navigation
 
 sealed class AppScreen {
-    object Home : AppScreen()
-    data class Guardian(val googleEmail: String) : AppScreen()
-    object Tracker : AppScreen()
+    object RoleSelect : AppScreen()
+    data class Auth(val isTracker: Boolean) : AppScreen()
+    data class Tracker(val email: String) : AppScreen()
+    data class Guardian(val email: String) : AppScreen()
 }

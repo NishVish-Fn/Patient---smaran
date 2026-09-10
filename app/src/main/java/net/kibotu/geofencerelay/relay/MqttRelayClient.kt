@@ -27,7 +27,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
 import java.util.UUID
 
 class MqttRelayClient(
-    private val brokerUrl: String = "tcp://broker.hivemq.com:1883"
+    private val brokerUrl: String = "tcp://broker.emqx.io:1883"
 ) : RelayClient {
 
     private val tag = "FindMyMqtt"
@@ -40,16 +40,19 @@ class MqttRelayClient(
     private val _isConnected = MutableStateFlow(false)
     override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
+    val isClientConnected: Boolean
+        get() = client?.isConnected == true
+
     private val _activeZone = MutableStateFlow<GeofenceZone?>(null)
     override val activeZone: StateFlow<GeofenceZone?> = _activeZone.asStateFlow()
 
-    private val _latestPing = MutableSharedFlow<LocationPing>(extraBufferCapacity = 64)
+    private val _latestPing = MutableSharedFlow<LocationPing>(replay = 1, extraBufferCapacity = 64)
     override val latestPing: SharedFlow<LocationPing> = _latestPing.asSharedFlow()
 
-    private val _breachAlert = MutableSharedFlow<BreachAlert>(extraBufferCapacity = 32)
+    private val _breachAlert = MutableSharedFlow<BreachAlert>(replay = 1, extraBufferCapacity = 32)
     override val breachAlert: SharedFlow<BreachAlert> = _breachAlert.asSharedFlow()
 
-    private val _incomingCommand = MutableSharedFlow<RemoteCommand>(extraBufferCapacity = 16)
+    private val _incomingCommand = MutableSharedFlow<RemoteCommand>(replay = 1, extraBufferCapacity = 16)
     override val incomingCommand: SharedFlow<RemoteCommand> = _incomingCommand.asSharedFlow()
 
     fun sanitizeEmail(email: String): String {
@@ -59,8 +62,25 @@ class MqttRelayClient(
             .replace("+", "_")
     }
 
+    private val isConnecting = java.util.concurrent.atomic.AtomicBoolean(false)
+
     override suspend fun connect(userEmail: String): Boolean = withContext(Dispatchers.IO) {
-        currentUserEmail = userEmail
+        if (userEmail.isBlank()) return@withContext false
+        currentUserEmail = userEmail.trim().lowercase()
+
+        // If already connected, ensure subscriptions are active
+        val existing = client
+        if (existing != null && existing.isConnected) {
+            _isConnected.value = true
+            subscribeForEmail(currentUserEmail)
+            return@withContext true
+        }
+
+        // Prevent overlapping connection attempts
+        if (!isConnecting.compareAndSet(false, true)) {
+            return@withContext false
+        }
+
         try {
             disconnect()
             val clientId = "findmy_${UUID.randomUUID().toString().take(8)}"
@@ -69,7 +89,7 @@ class MqttRelayClient(
 
             mqttClient.setCallback(object : MqttCallbackExtended {
                 override fun connectComplete(reconnect: Boolean, serverURI: String?) {
-                    Log.d(tag, "Connected to relay (reconnect=$reconnect)")
+                    Log.d(tag, "Connected to relay (reconnect=$reconnect, server=$serverURI)")
                     _isConnected.value = true
                     subscribeForEmail(currentUserEmail)
                 }
@@ -91,15 +111,22 @@ class MqttRelayClient(
                 isAutomaticReconnect = true
                 isCleanSession = true
                 connectionTimeout = 10
-                keepAliveInterval = 30
+                keepAliveInterval = 20
+                serverURIs = arrayOf(brokerUrl)
             }
 
+            Log.d(tag, "Connecting to MQTT broker for $currentUserEmail...")
             mqttClient.connect(options)
+            _isConnected.value = true
+            subscribeForEmail(currentUserEmail)
+            Log.d(tag, "Successfully connected and subscribed for $currentUserEmail")
             true
         } catch (e: Exception) {
             Log.e(tag, "Failed to connect: ${e.message}", e)
             _isConnected.value = false
             false
+        } finally {
+            isConnecting.set(false)
         }
     }
 
@@ -107,13 +134,11 @@ class MqttRelayClient(
         val c = client ?: return
         if (!c.isConnected) return
         val sanitized = sanitizeEmail(email)
-        val baseTopic = "findmy/v1/$sanitized"
+        val baseTopic = "bmtc_findmy/v2/$sanitized"
         try {
-            c.subscribe("$baseTopic/+/location", 0)
-            c.subscribe("$baseTopic/+/zone", 1)
-            c.subscribe("$baseTopic/+/alert", 1)
-            c.subscribe("$baseTopic/+/command", 1)
-            Log.d(tag, "Subscribed to topics for Google Account: $email ($sanitized)")
+            // Subscribe to full wildcard under this account to ensure 100% message reception
+            c.subscribe("$baseTopic/#", 1)
+            Log.d(tag, "Subscribed to wildcard $baseTopic/# for Google Account: $email")
         } catch (e: Exception) {
             Log.e(tag, "Subscribe error: ${e.message}", e)
         }
@@ -125,8 +150,8 @@ class MqttRelayClient(
                 when {
                     topic.endsWith("/location") -> {
                         val ping = json.decodeFromString<LocationPing>(payload)
-                        _latestPing.tryEmit(ping)
-                        Log.v(tag, "Received location from ${ping.deviceName}: ${ping.latitude}, ${ping.longitude}")
+                        _latestPing.emit(ping)
+                        Log.d(tag, "Received location from ${ping.deviceName}: ${ping.latitude}, ${ping.longitude}")
                     }
                     topic.endsWith("/zone") -> {
                         val zone = json.decodeFromString<GeofenceZone>(payload)
@@ -135,11 +160,12 @@ class MqttRelayClient(
                     }
                     topic.endsWith("/alert") -> {
                         val alert = json.decodeFromString<BreachAlert>(payload)
-                        _breachAlert.tryEmit(alert)
+                        _breachAlert.emit(alert)
+                        Log.w(tag, "Received breach alert: ${alert.status}")
                     }
                     topic.endsWith("/command") -> {
                         val cmd = json.decodeFromString<RemoteCommand>(payload)
-                        _incomingCommand.tryEmit(cmd)
+                        _incomingCommand.emit(cmd)
                         Log.d(tag, "Received remote command: ${cmd.command}")
                     }
                 }
@@ -149,44 +175,87 @@ class MqttRelayClient(
         }
     }
 
+    private suspend fun ensureConnected(email: String): Boolean {
+        if (client?.isConnected == true && _isConnected.value) return true
+        connect(email)
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start < 3000L) {
+            if (client?.isConnected == true && _isConnected.value) return true
+            kotlinx.coroutines.delay(100L)
+        }
+        return client?.isConnected == true
+    }
+
     override suspend fun publishZone(targetEmail: String, zone: GeofenceZone): Boolean = withContext(Dispatchers.IO) {
-        val topic = "findmy/v1/${sanitizeEmail(targetEmail)}/${zone.id}/zone"
+        val topic = "bmtc_findmy/v2/${sanitizeEmail(targetEmail)}/${zone.id}/zone"
         val payload = json.encodeToString(zone)
-        publishInternal(topic, payload, qos = 1, retained = true)
+        if (client?.isConnected != true) {
+            ensureConnected(targetEmail)
+        }
+        var ok = publishInternal(topic, payload, qos = 1, retained = true)
+        if (!ok) {
+            ensureConnected(targetEmail)
+            ok = publishInternal(topic, payload, qos = 1, retained = true)
+        }
+        ok
     }
 
     override suspend fun publishPing(targetEmail: String, ping: LocationPing): Boolean = withContext(Dispatchers.IO) {
-        val topic = "findmy/v1/${sanitizeEmail(targetEmail)}/${ping.deviceId}/location"
+        val topic = "bmtc_findmy/v2/${sanitizeEmail(targetEmail)}/${ping.deviceId}/location"
         val payload = json.encodeToString(ping)
-        publishInternal(topic, payload, qos = 0, retained = false)
+        if (client?.isConnected != true) {
+            ensureConnected(targetEmail)
+        }
+        var ok = publishInternal(topic, payload, qos = 1, retained = true)
+        if (!ok) {
+            ensureConnected(targetEmail)
+            ok = publishInternal(topic, payload, qos = 1, retained = true)
+        }
+        ok
     }
 
     override suspend fun publishAlert(targetEmail: String, alert: BreachAlert): Boolean = withContext(Dispatchers.IO) {
-        val topic = "findmy/v1/${sanitizeEmail(targetEmail)}/${alert.deviceId}/alert"
+        val topic = "bmtc_findmy/v2/${sanitizeEmail(targetEmail)}/${alert.deviceId}/alert"
         val payload = json.encodeToString(alert)
-        publishInternal(topic, payload, qos = 1, retained = false)
+        if (client?.isConnected != true) {
+            ensureConnected(targetEmail)
+        }
+        var ok = publishInternal(topic, payload, qos = 1, retained = false)
+        if (!ok) {
+            ensureConnected(targetEmail)
+            ok = publishInternal(topic, payload, qos = 1, retained = false)
+        }
+        ok
     }
 
     override suspend fun sendCommand(targetEmail: String, deviceId: String, command: RemoteCommand): Boolean = withContext(Dispatchers.IO) {
-        val topic = "findmy/v1/${sanitizeEmail(targetEmail)}/$deviceId/command"
+        val topic = "bmtc_findmy/v2/${sanitizeEmail(targetEmail)}/$deviceId/command"
         val payload = json.encodeToString(command)
-        publishInternal(topic, payload, qos = 1, retained = false)
+        if (client?.isConnected != true) {
+            ensureConnected(targetEmail)
+        }
+        var ok = publishInternal(topic, payload, qos = 1, retained = false)
+        if (!ok) {
+            ensureConnected(targetEmail)
+            ok = publishInternal(topic, payload, qos = 1, retained = false)
+        }
+        ok
     }
 
     private fun publishInternal(topic: String, payload: String, qos: Int, retained: Boolean): Boolean {
-        val c = client ?: return false
+        val c = client
+        if (c == null || !c.isConnected) {
+            Log.w(tag, "Cannot publish to $topic: disconnected")
+            return false
+        }
         return try {
-            if (c.isConnected) {
-                val message = MqttMessage(payload.toByteArray()).apply {
-                    this.qos = qos
-                    this.isRetained = retained
-                }
-                c.publish(topic, message)
-                true
-            } else {
-                Log.w(tag, "Cannot publish to $topic: disconnected")
-                false
+            val message = MqttMessage(payload.toByteArray()).apply {
+                this.qos = qos
+                this.isRetained = retained
             }
+            c.publish(topic, message)
+            Log.d(tag, "Published to $topic (qos=$qos, retained=$retained)")
+            true
         } catch (e: Exception) {
             Log.e(tag, "Publish failed: ${e.message}", e)
             false

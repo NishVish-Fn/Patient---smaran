@@ -12,4 +12,5 @@ app/build/
 *.hprof
 .cxx/
 *.apk
+!release/*.apk
 *.aab

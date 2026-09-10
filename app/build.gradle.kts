@@ -17,6 +17,23 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["appName"] = "Smaran"
+    }
+
+    flavorDimensions += "mode"
+    productFlavors {
+        create("tracker") {
+            dimension = "mode"
+            applicationIdSuffix = ".tracker"
+            versionNameSuffix = "-tracker"
+            manifestPlaceholders["appName"] = "Smaran"
+        }
+        create("guardian") {
+            dimension = "mode"
+            applicationIdSuffix = ".guardian"
+            versionNameSuffix = "-guardian"
+            manifestPlaceholders["appName"] = "Smaran Guardian"
+        }
     }
 
     buildTypes {
@@ -40,6 +57,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -53,6 +71,7 @@ dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
     androidTestImplementation(composeBom)
+    testImplementation("junit:junit:4.13.2")
 
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
@@ -67,6 +86,9 @@ dependencies {
 
     // Location & Geofencing
     implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // Google Sign-In (Official Google Play Services)
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     // OpenStreetMap (100% Free, zero billing, zero API keys)
     implementation("org.osmdroid:osmdroid-android:6.1.20")

@@ -8,12 +8,95 @@ import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.kibotu.geofencerelay.model.GeofenceZone
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
 object LocationUtils {
+
+    data class RealLocation(
+        val latitude: Double,
+        val longitude: Double,
+        val city: String = "",
+        val country: String = ""
+    )
+
+    fun isEmulator(): Boolean {
+        return (Build.FINGERPRINT.startsWith("generic")
+                || Build.FINGERPRINT.startsWith("unknown")
+                || Build.MODEL.contains("google_sdk")
+                || Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("Android SDK built for x86")
+                || Build.MANUFACTURER.contains("Genymotion")
+                || Build.HARDWARE.contains("goldfish")
+                || Build.HARDWARE.contains("ranchu")
+                || Build.PRODUCT.contains("sdk_gphone")
+                || Build.PRODUCT.contains("google_sdk"))
+    }
+
+    fun isGoogleplexDefault(lat: Double, lon: Double): Boolean {
+        return Math.abs(lat - 37.422) < 0.05 && Math.abs(lon - (-122.084)) < 0.05
+    }
+
+    suspend fun fetchIpLocation(): RealLocation? = withContext(Dispatchers.IO) {
+        // Try freeipapi.com first (HTTPS)
+        try {
+            val url = URL("https://freeipapi.com/api/json")
+            val conn = url.openConnection() as HttpURLConnection
+            conn.connectTimeout = 3000
+            conn.readTimeout = 3000
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 GeofenceRelay")
+            if (conn.responseCode == 200) {
+                val text = conn.inputStream.bufferedReader().use { it.readText() }
+                val json = JSONObject(text)
+                val lat = json.optDouble("latitude", 0.0)
+                val lon = json.optDouble("longitude", 0.0)
+                val city = json.optString("cityName", "")
+                val country = json.optString("countryName", "")
+                if (lat != 0.0 && lon != 0.0) {
+                    return@withContext RealLocation(lat, lon, city, country)
+                }
+            }
+        } catch (_: Exception) {}
+
+        // Fallback to ip-api.com (HTTP)
+        try {
+            val url = URL("http://ip-api.com/json")
+            val conn = url.openConnection() as HttpURLConnection
+            conn.connectTimeout = 3000
+            conn.readTimeout = 3000
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("User-Agent", "GeofenceRelay")
+            if (conn.responseCode == 200) {
+                val text = conn.inputStream.bufferedReader().use { it.readText() }
+                val json = JSONObject(text)
+                if (json.optString("status") == "success") {
+                    val lat = json.optDouble("lat", 0.0)
+                    val lon = json.optDouble("lon", 0.0)
+                    val city = json.optString("city", "")
+                    val country = json.optString("country", "")
+                    if (lat != 0.0 && lon != 0.0) {
+                        return@withContext RealLocation(lat, lon, city, country)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        null
+    }
+
+    fun getFriendlyDeviceName(rawModel: String?): String {
+        if (rawModel.isNullOrBlank()) return "My Phone"
+        return when {
+            rawModel.contains("sdk_gphone", ignoreCase = true) || rawModel.contains("emulator", ignoreCase = true) -> "My Device (Pixel 8)"
+            else -> rawModel
+        }
+    }
 
     fun distanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val results = FloatArray(1)
