@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.risk
+package net.kibotu.geofencerelay.features.ai.risk
 
 import android.content.Context
 import org.json.JSONArray
@@ -147,5 +147,22 @@ object CognitiveAnomalyDetector {
             }
         } catch (_: Exception) {}
         return list
+    }
+
+    data class AcuteAnomalyEval(
+        val isAnomaly: Boolean,
+        val riskLevel: String,
+        val reason: String
+    )
+
+    fun evaluateAcuteAnomaly(context: Context, accuracy: Double, responseTimeMs: Long, errors: Int): AcuteAnomalyEval {
+        val history = getSessionHistory(context)
+        val report = detectAnomalies(accuracy, responseTimeMs, errors, history)
+        val reason = if (report.alerts.isNotEmpty()) report.alerts.first().message else "Normal bounds"
+        return AcuteAnomalyEval(
+            isAnomaly = report.anomalyDetected,
+            riskLevel = report.riskLevel,
+            reason = reason
+        )
     }
 }

@@ -1,4 +1,4 @@
-package net.kibotu.geofencerelay.features.ai.ui.dialogs
+﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -36,11 +36,12 @@ import net.kibotu.geofencerelay.features.ai.model.GameSessionTelemetry
 import net.kibotu.geofencerelay.features.ai.reminder.GameReminderManager
 import net.kibotu.geofencerelay.features.ai.risk.CognitiveAnomalyDetector
 import net.kibotu.geofencerelay.features.ai.service.SmaranAiClient
+import net.kibotu.geofencerelay.features.ai.service.SmaranAiSessionAnalysisResponse
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
 import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
 import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
 import net.kibotu.geofencerelay.ui.theme.*
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
+import kotlin.math.roundToInt
 
 enum class ActiveGameMode {
     HUB,
@@ -64,12 +65,22 @@ data class CardItem(
     var isMatched: Boolean = false
 )
 
+data class GameSessionMetrics(
+    val durationMs: Long,
+    val accuracy: Double,
+    val attempts: Int,
+    val errors: Int,
+    val hintsUsed: Int = 0,
+    val completionRate: Double = 1.0,
+    val gameType: String
+)
+
 /**
  * Full-Screen Cognitive Games Hub supporting 4 rich multi-round clinical games:
- * 1. Jumbo Memory Match (Multi-round: Round 1 (8 cards) -> Round 2 (12 cards))
- * 2. Cultural Pattern & Sequence Recall (Levels 1-3 with instant touch glow and audio feedback)
- * 3. Color-Word Stroop Inhibition Challenge (10 rounds with jumbo conflict text)
- * 4. Ascending Number Trail Making (Rounds 1-2 with pulsing target locator)
+ * 1. Jumbo Memory Match (Adaptive grid: 4, 8, or 12 cards)
+ * 2. Cultural Pattern & Sequence Recall (Adaptive levels & sequences)
+ * 3. Color-Word Stroop Challenge (Adaptive 5, 8, or 12 rounds)
+ * 4. Ascending Number Trail Making (Adaptive 6, 8, or 12 targets)
  */
 @Composable
 fun BrainExerciseGamePanel(
@@ -132,7 +143,7 @@ fun BrainExerciseGamePanel(
 }
 
 /**
- * Hub Screen with 4 Game Options & Reminder Interval Configuration.
+ * Hub Screen with AI Cognitive Score Banner, 4 Games & Reminder Configuration.
  */
 @Composable
 private fun GameHubSelectionView(
@@ -142,6 +153,7 @@ private fun GameHubSelectionView(
 ) {
     val context = LocalContext.current
     var reminderInterval by remember { mutableStateOf(GameReminderManager.getReminderInterval(context)) }
+    val latestCps = remember { SmaranAiClient.getLatestCpsScore(context) }
 
     Column(
         modifier = Modifier
@@ -157,16 +169,15 @@ private fun GameHubSelectionView(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-        // Top Authentic Woven Textile Ribbon
-        NerWovenRibbon(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            height = 14.dp,
-            primaryColor = NerColors.Primary,
-            secondaryColor = NerColors.Secondary,
-            accentColor = NerColors.Marigold
-        )
+            NerWovenRibbon(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                height = 14.dp,
+                primaryColor = NerColors.Primary,
+                secondaryColor = NerColors.Secondary,
+                accentColor = NerColors.Marigold
+            )
             Text(
                 text = MultilingualManager.tr("games_hub_title", selectedLanguageCode),
                 fontSize = 24.sp,
@@ -181,47 +192,102 @@ private fun GameHubSelectionView(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // SMARAN AI Cognitive Performance & Status Header Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder),
+                    width = 1.dp
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(GoogleColors.Blue.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Psychology, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(28.dp))
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("CPS: ${latestCps.roundToInt()} / 100", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = NerColors.Charcoal)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(GoogleColors.Green.copy(alpha = 0.15f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("AI Active", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoogleColors.Green)
+                            }
+                        }
+                        Text("ML Random-Forest Adaptive Difficulty Pipeline", fontSize = 11.sp, color = NerColors.NeutralMedium)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Game 1: Memory Match
+            val memDiff = remember { SmaranAiClient.getRecommendedDifficulty(context, "memory_matching") }
             GameSelectionCard(
                 title = MultilingualManager.tr("game1_name", selectedLanguageCode),
                 desc = MultilingualManager.tr("game1_desc", selectedLanguageCode),
                 icon = Icons.Default.Style,
                 color = GoogleColors.Blue,
+                aiDifficulty = memDiff,
                 onClick = { onSelectGame(ActiveGameMode.MEMORY_MATCHING) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Game 2: 6-Pad Pattern & Sequence Logic
+            val patDiff = remember { SmaranAiClient.getRecommendedDifficulty(context, "pattern_recognition") }
             GameSelectionCard(
                 title = MultilingualManager.tr("game2_name", selectedLanguageCode),
                 desc = MultilingualManager.tr("game2_desc", selectedLanguageCode),
                 icon = Icons.Default.Extension,
                 color = GoogleColors.Green,
+                aiDifficulty = patDiff,
                 onClick = { onSelectGame(ActiveGameMode.PATTERN_RECOGNITION) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Game 3: Color-Word Stroop Challenge
+            val stroopDiff = remember { SmaranAiClient.getRecommendedDifficulty(context, "stroop_challenge") }
             GameSelectionCard(
                 title = MultilingualManager.tr("game3_title", selectedLanguageCode),
                 desc = MultilingualManager.tr("game3_desc", selectedLanguageCode),
                 icon = Icons.Default.ColorLens,
                 color = GoogleColors.Red,
+                aiDifficulty = stroopDiff,
                 onClick = { onSelectGame(ActiveGameMode.STROOP_CHALLENGE) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Game 4: Ascending Number Trail Making
+            val trailDiff = remember { SmaranAiClient.getRecommendedDifficulty(context, "trail_making") }
             GameSelectionCard(
                 title = MultilingualManager.tr("game4_title", selectedLanguageCode),
                 desc = MultilingualManager.tr("game4_desc", selectedLanguageCode),
                 icon = Icons.Default.Pin,
                 color = GoogleColors.Yellow,
+                aiDifficulty = trailDiff,
                 onClick = { onSelectGame(ActiveGameMode.TRAIL_MAKING) }
             )
 
@@ -270,7 +336,7 @@ private fun GameHubSelectionView(
                                         GameReminderManager.setReminderInterval(context, pair.first)
                                         android.widget.Toast.makeText(
                                             context,
-                                            "⏰ Reminder interval set to ${pair.second}. Alarm is armed!",
+                                            "â° Reminder interval set to ${pair.second}. Alarm is armed!",
                                             android.widget.Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -288,13 +354,12 @@ private fun GameHubSelectionView(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Instant Test Button (3 seconds)
                     Button(
                         onClick = {
                             GameReminderManager.triggerTestAlarmInSeconds(context, 3)
                             android.widget.Toast.makeText(
                                 context,
-                                "🔔 Alarm will trigger in 3 seconds! Turn screen OFF or close app now.",
+                                "ðŸ”” Alarm will trigger in 3 seconds! Turn screen OFF or close app now.",
                                 android.widget.Toast.LENGTH_LONG
                             ).show()
                         },
@@ -332,6 +397,7 @@ private fun GameSelectionCard(
     desc: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     color: Color,
+    aiDifficulty: String,
     onClick: () -> Unit
 ) {
     Card(
@@ -366,7 +432,18 @@ private fun GameSelectionCard(
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(color.copy(alpha = 0.15f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(aiDifficulty, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = color)
+                    }
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(desc, fontSize = 11.sp, color = NerColors.NeutralMedium, lineHeight = 15.sp)
             }
@@ -377,7 +454,347 @@ private fun GameSelectionCard(
 }
 
 /**
- * Game 1: Multi-Round Jumbo Memory Matching Game (Round 1: 4 pairs, Round 2: 6 pairs)
+ * In-Game Live HUD: Timer, Moves / Attempts, Errors & Current Difficulty Pill.
+ */
+@Composable
+private fun GameLiveHud(
+    elapsedSeconds: Int,
+    attempts: Int,
+    errors: Int,
+    activeDifficulty: String,
+    onDifficultyChanged: ((String) -> Unit)? = null
+) {
+    val minutes = elapsedSeconds / 60
+    val seconds = elapsedSeconds % 60
+    val timeFormatted = String.format("%02d:%02d", minutes, seconds)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder),
+            width = 1.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Time
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Timer, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(timeFormatted, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = NerColors.Charcoal)
+            }
+
+            // Attempts
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.TouchApp, contentDescription = null, tint = NerColors.NeutralMedium, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("$attempts moves", fontWeight = FontWeight.Medium, fontSize = 13.sp, color = NerColors.Charcoal)
+            }
+
+            // Errors
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Close, contentDescription = null, tint = if (errors > 0) GoogleColors.Red else GoogleColors.Green, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("$errors err", fontWeight = FontWeight.Medium, fontSize = 13.sp, color = if (errors > 0) GoogleColors.Red else NerColors.Charcoal)
+            }
+
+            // Difficulty Pill
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(GoogleColors.Blue.copy(alpha = 0.15f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "AI: $activeDifficulty",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = GoogleColors.Blue
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Pre-Game Difficulty Selector Chips: [Auto AI] [Easy] [Medium] [Hard].
+ */
+@Composable
+private fun DifficultySelectorRow(
+    selectedDifficulty: String,
+    onSelect: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        listOf("Easy", "Medium", "Hard").forEach { diff ->
+            val isSel = selectedDifficulty.equals(diff, ignoreCase = true)
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(if (isSel) GoogleColors.Blue else NerColors.SurfaceWhite)
+                    .border(1.dp, if (isSel) GoogleColors.Blue else NerColors.NeutralBorder, RoundedCornerShape(10.dp))
+                    .clickable { onSelect(diff) }
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = diff,
+                    fontSize = 12.sp,
+                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isSel) Color.White else NerColors.Charcoal
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Post-Game Clinical & AI Result Screen (Mirrors monorepo GameResultMetricsWidget + AI Pipeline).
+ */
+@Composable
+private fun ClinicalGameResultCard(
+    metrics: GameSessionMetrics,
+    analysis: SmaranAiSessionAnalysisResponse?,
+    selectedLanguageCode: String,
+    onPlayAgain: (recommendedDiff: String) -> Unit,
+    onBackToHub: () -> Unit
+) {
+    val isCompleted = metrics.completionRate >= 0.8
+    val durationSec = metrics.durationMs / 1000
+    val durationFormatted = String.format("%02d:%02d", durationSec / 60, durationSec % 60)
+    val recLevel = analysis?.recommendedLevel ?: "Medium"
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder),
+            width = 1.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 1. Completion Banner
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (isCompleted) GoogleColors.Green else GoogleColors.Yellow)
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        if (isCompleted) Icons.Default.CheckCircle else Icons.Default.Timelapse,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (isCompleted) "Well Done!" else "Good Effort!",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 2. Metrics Grid (Duration, Accuracy, Attempts, Errors, Hints, Completion)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                MetricItem(label = "Duration", value = durationFormatted, icon = Icons.Default.Timer, color = GoogleColors.Blue, modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
+                MetricItem(label = "Accuracy", value = "${(metrics.accuracy * 100).roundToInt()}%", icon = Icons.Default.TrackChanges, color = GoogleColors.Green, modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                MetricItem(label = "Attempts", value = "${metrics.attempts}", icon = Icons.Default.TouchApp, color = NerColors.Charcoal, modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
+                MetricItem(label = "Errors", value = "${metrics.errors}", icon = Icons.Default.Close, color = if (metrics.errors > 0) GoogleColors.Red else GoogleColors.Green, modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 3. SMARAN AI & ML Adaptive Diagnostics Box
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.CanvasIvory),
+                border = CardDefaults.outlinedCardBorder().copy(
+                    brush = androidx.compose.ui.graphics.SolidColor(GoogleColors.Blue.copy(alpha = 0.3f)),
+                    width = 1.dp
+                )
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Psychology, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("SMARAN AI Adaptive Engine", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = NerColors.Charcoal)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(GoogleColors.Blue)
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text("Next: $recLevel", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (analysis != null) {
+                        Text(
+                            text = "\"${analysis.patientMessage}\"",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = NerColors.Charcoal,
+                            lineHeight = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "Caregiver Clinical Note: ${analysis.caregiverSummary}",
+                            fontSize = 11.sp,
+                            color = NerColors.NeutralMedium,
+                            lineHeight = 15.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // CPS Score & Sub-scores
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceAround
+                        ) {
+                            SubScoreBadge("CPS Score", "${analysis.cpsScore.roundToInt()}/100", GoogleColors.Blue)
+                            SubScoreBadge("Memory", "${analysis.memoryRetentionIndex.roundToInt()}%", GoogleColors.Green)
+                            SubScoreBadge("Reaction", "${analysis.reactionLatencyScore.roundToInt()}%", GoogleColors.Yellow)
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Anomaly Warning Banner if triggered
+                        if (analysis.anomalyDetected) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(GoogleColors.Red.copy(alpha = 0.15f))
+                                    .padding(8.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Warning, contentDescription = null, tint = GoogleColors.Red, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Acute Drop Alert: ${analysis.anomalyMessage}", fontSize = 10.sp, color = GoogleColors.Red, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 4. Action Buttons
+            Button(
+                onClick = { onPlayAgain(recLevel) },
+                colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                Icon(Icons.Default.Replay, contentDescription = null, tint = Color.White)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Play Again (Level: $recLevel)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onBackToHub,
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp)
+            ) {
+                Icon(Icons.Default.Home, contentDescription = null, tint = NerColors.Charcoal)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Back to Games Hub", fontSize = 14.sp, color = NerColors.Charcoal)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetricItem(
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(NerColors.CanvasWarm)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
+                Text(label, fontSize = 10.sp, color = NerColors.NeutralMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubScoreBadge(label: String, value: String, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = color)
+        Text(label, fontSize = 10.sp, color = NerColors.NeutralMedium)
+    }
+}
+
+/**
+ * Game 1: Multi-Round Memory Matching Game with HUD and AI difficulty.
  */
 @Composable
 private fun FullScreenMemoryMatchingGameView(
@@ -387,6 +804,8 @@ private fun FullScreenMemoryMatchingGameView(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var activeDifficulty by remember { mutableStateOf(SmaranAiClient.getRecommendedDifficulty(context, "memory_matching")) }
+
     val symbolsPool = remember {
         listOf(
             MatchSymbol(1, Icons.Default.Favorite, GoogleColors.Red, "Heart"),
@@ -399,12 +818,15 @@ private fun FullScreenMemoryMatchingGameView(
             MatchSymbol(8, Icons.Default.Park, Color(0xFF4CAF50), "Tree")
         )
     }
-    var currentRound by remember { mutableStateOf(1) }
-    val maxRounds = 2
-    val pairsForRound = if (currentRound == 1) 4 else 6
 
-    var cards by remember(currentRound) {
-        val picked = symbolsPool.shuffled().take(pairsForRound)
+    val pairsForDifficulty = when (activeDifficulty.lowercase()) {
+        "easy" -> 3
+        "hard" -> 6
+        else -> 4 // Medium
+    }
+
+    var cards by remember(activeDifficulty) {
+        val picked = symbolsPool.shuffled().take(pairsForDifficulty)
         val deck = (picked + picked).shuffled().mapIndexed { idx, s ->
             CardItem(id = idx, symbolItem = s)
         }
@@ -415,19 +837,35 @@ private fun FullScreenMemoryMatchingGameView(
     var totalAttempts by remember { mutableStateOf(0) }
     var totalErrors by remember { mutableStateOf(0) }
     var isGameFinished by remember { mutableStateOf(false) }
-    val startTime = remember { System.currentTimeMillis() }
-    var completionMessage by remember { mutableStateOf("") }
+    var elapsedSeconds by remember { mutableStateOf(0) }
     var isBusyChecking by remember { mutableStateOf(false) }
+    var sessionAnalysis by remember { mutableStateOf<SmaranAiSessionAnalysisResponse?>(null) }
+    var lastMetrics by remember { mutableStateOf<GameSessionMetrics?>(null) }
 
-    fun resetWholeGame() {
-        currentRound = 1
-        val picked = symbolsPool.shuffled().take(4)
+    // Live timer
+    LaunchedEffect(isGameFinished) {
+        while (!isGameFinished) {
+            delay(1000)
+            elapsedSeconds++
+        }
+    }
+
+    fun resetGame(diff: String = activeDifficulty) {
+        activeDifficulty = diff
+        val pairs = when (diff.lowercase()) {
+            "easy" -> 3
+            "hard" -> 6
+            else -> 4
+        }
+        val picked = symbolsPool.shuffled().take(pairs)
         cards = (picked + picked).shuffled().mapIndexed { idx, s -> CardItem(id = idx, symbolItem = s) }
         flippedIndices = emptyList()
         totalAttempts = 0
         totalErrors = 0
+        elapsedSeconds = 0
         isGameFinished = false
-        completionMessage = ""
+        sessionAnalysis = null
+        lastMetrics = null
         isBusyChecking = false
     }
 
@@ -448,49 +886,48 @@ private fun FullScreenMemoryMatchingGameView(
 
                 val allMatched = updatedCards.all { it.isMatched }
                 if (allMatched) {
-                    if (currentRound < maxRounds) {
-                        delay(500)
-                        val nextRnd = currentRound + 1
-                        val nextPairs = if (nextRnd == 1) 4 else 6
-                        val nextPicked = symbolsPool.shuffled().take(nextPairs)
-                        cards = (nextPicked + nextPicked).shuffled().mapIndexed { idx, s ->
-                            CardItem(id = idx, symbolItem = s)
-                        }
-                        currentRound = nextRnd
-                        flippedIndices = emptyList()
-                        isBusyChecking = false
-                    } else {
-                        val durationMs = System.currentTimeMillis() - startTime
-                        val accuracy = if (totalAttempts > 0) ((4 + 6).toDouble() / totalAttempts).coerceIn(0.0, 1.0) else 1.0
-                        val telemetry = GameSessionTelemetry(
+                    val durationMs = elapsedSeconds * 1000L
+                    val accuracy = if (totalAttempts > 0) (pairsForDifficulty.toDouble() / totalAttempts).coerceIn(0.0, 1.0) else 1.0
+                    val telemetry = GameSessionTelemetry(
+                        gameType = "memory_matching",
+                        accuracy = accuracy,
+                        responseTimeMs = durationMs,
+                        attempts = totalAttempts,
+                        errors = totalErrors,
+                        completionRate = 1.0
+                    )
+                    val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
+                    CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+
+                    val metrics = GameSessionMetrics(
+                        durationMs = durationMs,
+                        accuracy = accuracy,
+                        attempts = totalAttempts,
+                        errors = totalErrors,
+                        hintsUsed = 0,
+                        completionRate = 1.0,
+                        gameType = "memory_matching"
+                    )
+                    lastMetrics = metrics
+
+                    scope.launch {
+                        val analysis = SmaranAiClient.analyzeSession(
+                            context = context,
                             gameType = "memory_matching",
+                            currentDifficulty = activeDifficulty,
                             accuracy = accuracy,
+                            completionRate = 1.0,
                             responseTimeMs = durationMs,
-                            attempts = totalAttempts,
                             errors = totalErrors,
-                            completionRate = 1.0
+                            hintsUsed = 0
                         )
-                        val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
-                        completionMessage = result.encouragementPrompt
-                        CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
-                        scope.launch {
-                            SmaranAiClient.predictDifficulty(
-                                context = context,
-                                gameType = telemetry.gameType,
-                                currentDifficulty = result.hiddenDifficulty,
-                                accuracy = telemetry.accuracy,
-                                completionRate = telemetry.completionRate,
-                                responseTimeMs = telemetry.responseTimeMs,
-                                errors = telemetry.errors,
-                                hintsUsed = telemetry.hintsUsed
-                            )
-                        }
-                        onAssessmentUpdated(result)
+                        sessionAnalysis = analysis
                         isGameFinished = true
-                        flippedIndices = emptyList()
-                        isBusyChecking = false
-                        MultilingualManager.speak(result.encouragementPrompt, selectedLanguageCode)
+                        MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
                     }
+                    onAssessmentUpdated(result)
+                    flippedIndices = emptyList()
+                    isBusyChecking = false
                 } else {
                     flippedIndices = emptyList()
                     isBusyChecking = false
@@ -526,23 +963,24 @@ private fun FullScreenMemoryMatchingGameView(
                 fontWeight = FontWeight.ExtraBold,
                 color = NerColors.Charcoal
             )
-            Text(
-                text = "${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxRounds • ${cards.count { it.isMatched } / 2} / $pairsForRound ${MultilingualManager.tr("game1_matched_status", selectedLanguageCode)}",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = GoogleColors.Blue
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(10.dp))
+            if (!isGameFinished) {
+                // Pre-game / in-game live difficulty selector
+                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { resetGame(it) })
+                GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = totalAttempts, errors = totalErrors, activeDifficulty = activeDifficulty)
+            }
 
-            if (isGameFinished) {
-                VictoryCard(
-                    message = completionMessage,
+            if (isGameFinished && lastMetrics != null) {
+                ClinicalGameResultCard(
+                    metrics = lastMetrics!!,
+                    analysis = sessionAnalysis,
                     selectedLanguageCode = selectedLanguageCode,
-                    onPlayAgain = { resetWholeGame() }
+                    onPlayAgain = { recDiff -> resetGame(recDiff) },
+                    onBackToHub = onBack
                 )
             } else {
-                val cols = if (currentRound == 1) 2 else 3
+                val cols = if (pairsForDifficulty <= 4) 2 else 3
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(cols),
                     modifier = Modifier
@@ -563,7 +1001,7 @@ private fun FullScreenMemoryMatchingGameView(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(if (currentRound == 1) 120.dp else 96.dp)
+                                .height(if (cols == 2) 115.dp else 95.dp)
                                 .clip(RoundedCornerShape(18.dp))
                                 .clickable(enabled = !card.isFlipped && !card.isMatched && !isBusyChecking) {
                                     if (flippedIndices.size < 2) {
@@ -592,12 +1030,12 @@ private fun FullScreenMemoryMatchingGameView(
                                         imageVector = card.symbolItem.icon,
                                         contentDescription = card.symbolItem.name,
                                         tint = card.symbolItem.tint,
-                                        modifier = Modifier.size(if (currentRound == 1) 56.dp else 44.dp)
+                                        modifier = Modifier.size(if (cols == 2) 52.dp else 42.dp)
                                     )
                                 } else {
                                     Box(
                                         modifier = Modifier
-                                            .size(46.dp)
+                                            .size(44.dp)
                                             .clip(CircleShape)
                                             .background(GoogleColors.Blue.copy(alpha = 0.16f)),
                                         contentAlignment = Alignment.Center
@@ -617,17 +1055,18 @@ private fun FullScreenMemoryMatchingGameView(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        IosBackPillButton(
-            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
-            onClick = onBack
-        )
+        if (!isGameFinished) {
+            Spacer(modifier = Modifier.height(10.dp))
+            IosBackPillButton(
+                label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+                onClick = onBack
+            )
+        }
     }
 }
 
 /**
- * Game 2: Multi-Round Cultural Pattern & Sequence Recall with instant tap glow feedback
+ * Game 2: Multi-Round Cultural Pattern & Sequence Recall with HUD and AI difficulty.
  */
 data class PatternPadItem(
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -652,38 +1091,55 @@ private fun FullScreenPatternSequenceGameView(
         )
     }
 
-    var currentLevel by remember { mutableStateOf(1) }
-    val maxLevels = 3
-    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var activeDifficulty by remember { mutableStateOf(SmaranAiClient.getRecommendedDifficulty(context, "pattern_recognition")) }
 
-    // Level 1: 3 steps; Level 2: 4 steps; Level 3: 5 steps
-    fun generateSequence(level: Int): List<Int> {
-        val len = when (level) {
-            1 -> 3
-            2 -> 4
-            else -> 5
-        }
-        return (1..len).map { (0..5).random() }
+    val seqLength = when (activeDifficulty.lowercase()) {
+        "easy" -> 3
+        "hard" -> 5
+        else -> 4
     }
 
-    var sequence by remember { mutableStateOf(generateSequence(1)) }
+    fun generateSequence(len: Int): List<Int> = (1..len).map { (0..5).random() }
+
+    var sequence by remember(activeDifficulty) { mutableStateOf(generateSequence(seqLength)) }
     var highlightedIndex by remember { mutableStateOf<Int?>(null) }
     var userTappedHighlightIdx by remember { mutableStateOf<Int?>(null) }
     var isShowingSequence by remember { mutableStateOf(true) }
     var userTappedSteps by remember { mutableStateOf<List<Int>>(emptyList()) }
     var isFinished by remember { mutableStateOf(false) }
-    var completionMessage by remember { mutableStateOf("") }
-    var feedbackText by remember { mutableStateOf(MultilingualManager.tr("game2_watch_glow", selectedLanguageCode)) }
-    val startTime = remember { System.currentTimeMillis() }
+    var elapsedSeconds by remember { mutableStateOf(0) }
+    var totalAttempts by remember { mutableStateOf(0) }
+    var totalErrors by remember { mutableStateOf(0) }
+    var sessionAnalysis by remember { mutableStateOf<SmaranAiSessionAnalysisResponse?>(null) }
+    var lastMetrics by remember { mutableStateOf<GameSessionMetrics?>(null) }
 
-    fun playSequenceForLevel(lvl: Int) {
-        sequence = generateSequence(lvl)
+    LaunchedEffect(isFinished) {
+        while (!isFinished) {
+            delay(1000)
+            elapsedSeconds++
+        }
+    }
+
+    fun playSequence(diff: String = activeDifficulty) {
+        activeDifficulty = diff
+        val len = when (diff.lowercase()) {
+            "easy" -> 3
+            "hard" -> 5
+            else -> 4
+        }
+        sequence = generateSequence(len)
         highlightedIndex = null
         userTappedHighlightIdx = null
         userTappedSteps = emptyList()
-        feedbackText = MultilingualManager.tr("game2_watch_glow", selectedLanguageCode)
         isShowingSequence = true
+        isFinished = false
+        sessionAnalysis = null
+        lastMetrics = null
+        elapsedSeconds = 0
+        totalAttempts = 0
+        totalErrors = 0
     }
 
     LaunchedEffect(isShowingSequence, sequence) {
@@ -696,7 +1152,6 @@ private fun FullScreenPatternSequenceGameView(
                 delay(200)
             }
             isShowingSequence = false
-            feedbackText = MultilingualManager.tr("game2_your_turn_prompt", selectedLanguageCode)
         }
     }
 
@@ -718,51 +1173,46 @@ private fun FullScreenPatternSequenceGameView(
                 fontWeight = FontWeight.ExtraBold,
                 color = NerColors.Charcoal
             )
-            Text(
-                text = "${MultilingualManager.tr("lbl_level", selectedLanguageCode)} $currentLevel ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxLevels • $feedbackText",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isShowingSequence) GoogleColors.Red else GoogleColors.Blue,
-                textAlign = TextAlign.Center
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
+            if (!isFinished) {
+                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { playSequence(it) })
+                GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = totalAttempts, errors = totalErrors, activeDifficulty = activeDifficulty)
 
-            // Step Progress Dots
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) {
-                sequence.indices.forEach { stepIdx ->
-                    val isDone = stepIdx < userTappedSteps.size
-                    val isCurrent = stepIdx == userTappedSteps.size && !isShowingSequence
-                    val dotColor = when {
-                        isDone -> GoogleColors.Green
-                        isCurrent -> GoogleColors.Blue
-                        else -> Color.LightGray
+                // Step Progress Dots
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    sequence.indices.forEach { stepIdx ->
+                        val isDone = stepIdx < userTappedSteps.size
+                        val isCurrent = stepIdx == userTappedSteps.size && !isShowingSequence
+                        val dotColor = when {
+                            isDone -> GoogleColors.Green
+                            isCurrent -> GoogleColors.Blue
+                            else -> Color.LightGray
+                        }
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(if (isCurrent) 12.dp else 10.dp)
+                                .clip(CircleShape)
+                                .background(dotColor)
+                        )
                     }
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(if (isCurrent) 12.dp else 10.dp)
-                            .clip(CircleShape)
-                            .background(dotColor)
-                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            if (isFinished) {
-                VictoryCard(
-                    message = completionMessage,
+            if (isFinished && lastMetrics != null) {
+                ClinicalGameResultCard(
+                    metrics = lastMetrics!!,
+                    analysis = sessionAnalysis,
                     selectedLanguageCode = selectedLanguageCode,
-                    onPlayAgain = {
-                        currentLevel = 1
-                        isFinished = false
-                        playSequenceForLevel(1)
-                    }
+                    onPlayAgain = { recDiff -> playSequence(recDiff) },
+                    onBackToHub = onBack
                 )
             } else {
                 LazyVerticalGrid(
@@ -779,22 +1229,22 @@ private fun FullScreenPatternSequenceGameView(
                         val isLit = isLitBySystem || isLitByUser
 
                         val cardBg by animateColorAsState(
-                            targetValue = if (isLit) item.color else NerColors.SurfaceWhite,
+                            targetValue = if (isLit) item.color.copy(alpha = 0.45f) else NerColors.SurfaceWhite,
                             animationSpec = tween(150),
-                            label = "padBg"
+                            label = "padColor"
                         )
 
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(120.dp)
+                                .height(115.dp)
                                 .clip(RoundedCornerShape(20.dp))
                                 .clickable(enabled = !isShowingSequence) {
-                                    // User tap feedback!
+                                    totalAttempts++
                                     userTappedHighlightIdx = idx
                                     coroutineScope.launch {
-                                        delay(220)
-                                        userTappedHighlightIdx = null
+                                        delay(250)
+                                        if (userTappedHighlightIdx == idx) userTappedHighlightIdx = null
                                     }
 
                                     val nextExpected = sequence[userTappedSteps.size]
@@ -802,48 +1252,51 @@ private fun FullScreenPatternSequenceGameView(
                                         val newSteps = userTappedSteps + idx
                                         userTappedSteps = newSteps
                                         if (newSteps.size == sequence.size) {
-                                            if (currentLevel < maxLevels) {
-                                                coroutineScope.launch {
-                                                    feedbackText = "${MultilingualManager.tr("lbl_level", selectedLanguageCode)} $currentLevel: ${MultilingualManager.tr("game2_level_cleared_msg", selectedLanguageCode)}"
-                                                    delay(700)
-                                                    currentLevel++
-                                                    playSequenceForLevel(currentLevel)
-                                                }
-                                            } else {
-                                                val elapsed = System.currentTimeMillis() - startTime
-                                                val telemetry = GameSessionTelemetry(
+                                            val durationMs = elapsedSeconds * 1000L
+                                            val acc = if (totalAttempts > 0) (sequence.size.toDouble() / totalAttempts).coerceIn(0.0, 1.0) else 1.0
+                                            val telemetry = GameSessionTelemetry(
+                                                gameType = "pattern_recognition",
+                                                accuracy = acc,
+                                                responseTimeMs = durationMs,
+                                                attempts = totalAttempts,
+                                                errors = totalErrors,
+                                                completionRate = 1.0
+                                            )
+                                            val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
+                                            CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+
+                                            val metrics = GameSessionMetrics(
+                                                durationMs = durationMs,
+                                                accuracy = acc,
+                                                attempts = totalAttempts,
+                                                errors = totalErrors,
+                                                hintsUsed = 0,
+                                                completionRate = 1.0,
+                                                gameType = "pattern_recognition"
+                                            )
+                                            lastMetrics = metrics
+
+                                            coroutineScope.launch {
+                                                val analysis = SmaranAiClient.analyzeSession(
+                                                    context = context,
                                                     gameType = "pattern_recognition",
-                                                    accuracy = 1.0,
-                                                    responseTimeMs = elapsed,
-                                                    attempts = sequence.size,
-                                                    errors = 0,
-                                                    completionRate = 1.0
+                                                    currentDifficulty = activeDifficulty,
+                                                    accuracy = acc,
+                                                    completionRate = 1.0,
+                                                    responseTimeMs = durationMs,
+                                                    errors = totalErrors,
+                                                    hintsUsed = 0
                                                 )
-                                                val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
-                                                completionMessage = result.encouragementPrompt
-                                                CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
-                                                coroutineScope.launch {
-                                                    SmaranAiClient.predictDifficulty(
-                                                        context = context,
-                                                        gameType = telemetry.gameType,
-                                                        currentDifficulty = result.hiddenDifficulty,
-                                                        accuracy = telemetry.accuracy,
-                                                        completionRate = telemetry.completionRate,
-                                                        responseTimeMs = telemetry.responseTimeMs,
-                                                        errors = telemetry.errors,
-                                                        hintsUsed = telemetry.hintsUsed
-                                                    )
-                                                }
-                                                onAssessmentUpdated(result)
+                                                sessionAnalysis = analysis
                                                 isFinished = true
-                                                MultilingualManager.speak(result.encouragementPrompt, selectedLanguageCode)
+                                                MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
                                             }
+                                            onAssessmentUpdated(result)
                                         }
                                     } else {
-                                        // User missed step - replay sequence cleanly!
+                                        totalErrors++
                                         coroutineScope.launch {
-                                            feedbackText = MultilingualManager.tr("game2_missed_msg", selectedLanguageCode)
-                                            delay(700)
+                                            delay(500)
                                             userTappedSteps = emptyList()
                                             isShowingSequence = true
                                         }
@@ -867,7 +1320,7 @@ private fun FullScreenPatternSequenceGameView(
                                     imageVector = item.icon,
                                     contentDescription = item.label,
                                     tint = if (isLit) Color.White else item.color,
-                                    modifier = Modifier.size(54.dp)
+                                    modifier = Modifier.size(52.dp)
                                 )
                             }
                         }
@@ -876,17 +1329,18 @@ private fun FullScreenPatternSequenceGameView(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        IosBackPillButton(
-            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
-            onClick = onBack
-        )
+        if (!isFinished) {
+            Spacer(modifier = Modifier.height(10.dp))
+            IosBackPillButton(
+                label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+                onClick = onBack
+            )
+        }
     }
 }
 
 /**
- * Game 3: Color-Word Stroop Cognitive Inhibition Challenge (10 Full Rounds with Jumbo Text)
+ * Game 3: Color-Word Stroop Challenge with HUD and AI difficulty.
  */
 @Composable
 private fun ColorStroopChallengeGameView(
@@ -896,59 +1350,106 @@ private fun ColorStroopChallengeGameView(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    var activeDifficulty by remember { mutableStateOf(SmaranAiClient.getRecommendedDifficulty(context, "stroop_challenge")) }
+
     val colorOptions = listOf(
-        Triple("BLUE", "Blue / नीला", GoogleColors.Blue),
-        Triple("RED", "Red / लाल", GoogleColors.Red),
-        Triple("GREEN", "Green / हरा", GoogleColors.Green),
-        Triple("YELLOW", "Yellow / पीला", GoogleColors.Yellow)
+        Triple("BLUE", "Blue / à¤¨à¥€à¤²à¤¾", GoogleColors.Blue),
+        Triple("RED", "Red / à¤²à¤¾à¤²", GoogleColors.Red),
+        Triple("GREEN", "Green / à¤¹à¤°à¤¾", GoogleColors.Green),
+        Triple("YELLOW", "Yellow / à¤ªà¥€à¤²à¤¾", GoogleColors.Yellow)
     )
 
-    var currentWordIndex by remember { mutableStateOf(0) }
-    var currentInkColorIndex by remember { mutableStateOf(1) } // Conflict!
-    var scoreCount by remember { mutableStateOf(0) }
-    val totalRounds = 10
-    var currentRound by remember { mutableStateOf(1) }
-    var isFinished by remember { mutableStateOf(false) }
-    var completionMessage by remember { mutableStateOf("") }
-    val startTime = remember { System.currentTimeMillis() }
+    val totalRounds = when (activeDifficulty.lowercase()) {
+        "easy" -> 5
+        "hard" -> 12
+        else -> 8
+    }
 
-    fun nextStroopQuestion() {
+    var currentWordIndex by remember { mutableStateOf(0) }
+    var currentInkColorIndex by remember { mutableStateOf(1) }
+    var scoreCount by remember { mutableStateOf(0) }
+    var currentRound by remember { mutableStateOf(1) }
+    var totalErrors by remember { mutableStateOf(0) }
+    var isFinished by remember { mutableStateOf(false) }
+    var elapsedSeconds by remember { mutableStateOf(0) }
+    var sessionAnalysis by remember { mutableStateOf<SmaranAiSessionAnalysisResponse?>(null) }
+    var lastMetrics by remember { mutableStateOf<GameSessionMetrics?>(null) }
+
+    LaunchedEffect(isFinished) {
+        while (!isFinished) {
+            delay(1000)
+            elapsedSeconds++
+        }
+    }
+
+    fun resetStroop(diff: String = activeDifficulty) {
+        activeDifficulty = diff
+        scoreCount = 0
+        currentRound = 1
+        totalErrors = 0
+        elapsedSeconds = 0
+        isFinished = false
+        sessionAnalysis = null
+        lastMetrics = null
+        currentWordIndex = (0..3).random()
+        var ink = (0..3).random()
+        while (ink == currentWordIndex) ink = (0..3).random()
+        currentInkColorIndex = ink
+    }
+
+    fun nextStroopQuestion(userChoiceInk: Int) {
+        if (userChoiceInk == currentInkColorIndex) {
+            scoreCount++
+        } else {
+            totalErrors++
+        }
+
         if (currentRound >= totalRounds) {
-            val elapsed = System.currentTimeMillis() - startTime
+            val durationMs = elapsedSeconds * 1000L
             val accuracy = (scoreCount.toDouble() / totalRounds).coerceIn(0.0, 1.0)
             val telemetry = GameSessionTelemetry(
-                gameType = "stroop_test",
+                gameType = "stroop_challenge",
                 accuracy = accuracy,
-                responseTimeMs = elapsed,
+                responseTimeMs = durationMs,
                 attempts = totalRounds,
-                errors = totalRounds - scoreCount,
+                errors = totalErrors,
                 completionRate = 1.0
             )
             val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
-            completionMessage = result.encouragementPrompt
             CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+
+            val metrics = GameSessionMetrics(
+                durationMs = durationMs,
+                accuracy = accuracy,
+                attempts = totalRounds,
+                errors = totalErrors,
+                hintsUsed = 0,
+                completionRate = 1.0,
+                gameType = "stroop_challenge"
+            )
+            lastMetrics = metrics
+
             coroutineScope.launch {
-                SmaranAiClient.predictDifficulty(
+                val analysis = SmaranAiClient.analyzeSession(
                     context = context,
-                    gameType = telemetry.gameType,
-                    currentDifficulty = result.hiddenDifficulty,
-                    accuracy = telemetry.accuracy,
-                    completionRate = telemetry.completionRate,
-                    responseTimeMs = telemetry.responseTimeMs,
-                    errors = telemetry.errors,
-                    hintsUsed = telemetry.hintsUsed
+                    gameType = "stroop_challenge",
+                    currentDifficulty = activeDifficulty,
+                    accuracy = accuracy,
+                    completionRate = 1.0,
+                    responseTimeMs = durationMs,
+                    errors = totalErrors,
+                    hintsUsed = 0
                 )
+                sessionAnalysis = analysis
+                isFinished = true
+                MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
             }
             onAssessmentUpdated(result)
-            isFinished = true
-            MultilingualManager.speak(result.encouragementPrompt, selectedLanguageCode)
         } else {
             currentRound++
             currentWordIndex = (0..3).random()
             var ink = (0..3).random()
-            while (ink == currentWordIndex) {
-                ink = (0..3).random()
-            }
+            while (ink == currentWordIndex) ink = (0..3).random()
             currentInkColorIndex = ink
         }
     }
@@ -971,32 +1472,29 @@ private fun ColorStroopChallengeGameView(
                 fontWeight = FontWeight.ExtraBold,
                 color = NerColors.Charcoal
             )
-            Text(
-                text = "${MultilingualManager.tr("game3_tap_ink", selectedLanguageCode)} • ${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $totalRounds (${MultilingualManager.tr("lbl_score", selectedLanguageCode)}: $scoreCount)",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = GoogleColors.Blue,
-                textAlign = TextAlign.Center
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(18.dp))
+            if (!isFinished) {
+                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { resetStroop(it) })
+                GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = currentRound - 1, errors = totalErrors, activeDifficulty = activeDifficulty)
+            }
 
-            if (isFinished) {
-                VictoryCard(
-                    message = completionMessage,
+            Spacer(modifier = Modifier.height(10.dp))
+
+            if (isFinished && lastMetrics != null) {
+                ClinicalGameResultCard(
+                    metrics = lastMetrics!!,
+                    analysis = sessionAnalysis,
                     selectedLanguageCode = selectedLanguageCode,
-                    onPlayAgain = {
-                        scoreCount = 0
-                        currentRound = 1
-                        isFinished = false
-                    }
+                    onPlayAgain = { recDiff -> resetStroop(recDiff) },
+                    onBackToHub = onBack
                 )
             } else {
-                // Word Display Box with Jumbo text and intentional color conflict!
+                // Word Display Box with intentional ink conflict!
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(160.dp),
+                        .height(150.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
@@ -1008,59 +1506,65 @@ private fun ColorStroopChallengeGameView(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = colorOptions[currentWordIndex].first,
-                            color = colorOptions[currentInkColorIndex].third, // Intentional conflict!
-                            fontSize = 54.sp,
+                            fontSize = 44.sp,
                             fontWeight = FontWeight.Black,
+                            color = colorOptions[currentInkColorIndex].third,
                             letterSpacing = 2.sp
                         )
                     }
                 }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(MultilingualManager.tr("game3_select_prompt", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
+                Text(
+                    text = MultilingualManager.tr("game3_tap_ink", selectedLanguageCode),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NerColors.NeutralMedium
+                )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // 4 Large Color Choice Buttons
+                // Color Choice Grid
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    itemsIndexed(colorOptions) { idx, opt ->
+                    itemsIndexed(colorOptions) { idx, colorOption ->
                         Button(
-                            onClick = {
-                                if (idx == currentInkColorIndex) {
-                                    scoreCount++
-                                }
-                                nextStroopQuestion()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = opt.third),
-                            shape = RoundedCornerShape(18.dp),
+                            onClick = { nextStroopQuestion(idx) },
+                            colors = ButtonDefaults.buttonColors(containerColor = colorOption.third),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(68.dp)
+                                .height(56.dp)
                         ) {
-                            Text(opt.first, fontWeight = FontWeight.Black, fontSize = 18.sp, color = Color.White)
+                            Text(
+                                text = colorOption.second,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        IosBackPillButton(
-            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
-            onClick = onBack
-        )
+        if (!isFinished) {
+            Spacer(modifier = Modifier.height(10.dp))
+            IosBackPillButton(
+                label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+                onClick = onBack
+            )
+        }
     }
 }
 
 /**
- * Game 4: Multi-Round Ascending Number Trail Making (Round 1: 1 to 8, Round 2: 1 to 10)
+ * Game 4: Ascending Number Trail Making with HUD and AI difficulty.
  */
 @Composable
 private fun AscendingTrailMakingGameView(
@@ -1070,21 +1574,45 @@ private fun AscendingTrailMakingGameView(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    var currentRound by remember { mutableStateOf(1) }
-    val maxRound = 2
-    val targetMax = if (currentRound == 1) 8 else 10
+    var activeDifficulty by remember { mutableStateOf(SmaranAiClient.getRecommendedDifficulty(context, "trail_making")) }
 
-    var nextExpectedNumber by remember(currentRound) { mutableStateOf(1) }
-    var numbersPool by remember(currentRound) { mutableStateOf((1..targetMax).toList().shuffled()) }
+    val targetMax = when (activeDifficulty.lowercase()) {
+        "easy" -> 6
+        "hard" -> 12
+        else -> 9
+    }
+
+    var nextExpectedNumber by remember { mutableStateOf(1) }
+    var numbersPool by remember(activeDifficulty) { mutableStateOf((1..targetMax).toList().shuffled()) }
+    var totalErrors by remember { mutableStateOf(0) }
+    var totalAttempts by remember { mutableStateOf(0) }
     var isFinished by remember { mutableStateOf(false) }
-    var completionMessage by remember { mutableStateOf("") }
-    val startTime = remember { System.currentTimeMillis() }
+    var elapsedSeconds by remember { mutableStateOf(0) }
+    var sessionAnalysis by remember { mutableStateOf<SmaranAiSessionAnalysisResponse?>(null) }
+    var lastMetrics by remember { mutableStateOf<GameSessionMetrics?>(null) }
 
-    fun resetWholeGame() {
-        currentRound = 1
+    LaunchedEffect(isFinished) {
+        while (!isFinished) {
+            delay(1000)
+            elapsedSeconds++
+        }
+    }
+
+    fun resetTrail(diff: String = activeDifficulty) {
+        activeDifficulty = diff
+        val maxN = when (diff.lowercase()) {
+            "easy" -> 6
+            "hard" -> 12
+            else -> 9
+        }
         nextExpectedNumber = 1
-        numbersPool = (1..8).toList().shuffled()
+        numbersPool = (1..maxN).toList().shuffled()
+        totalErrors = 0
+        totalAttempts = 0
+        elapsedSeconds = 0
         isFinished = false
+        sessionAnalysis = null
+        lastMetrics = null
     }
 
     Column(
@@ -1105,35 +1633,33 @@ private fun AscendingTrailMakingGameView(
                 fontWeight = FontWeight.ExtraBold,
                 color = NerColors.Charcoal
             )
-            Text(
-                text = "${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxRound • ${MultilingualManager.tr("game4_next_prompt", selectedLanguageCode)}: [$nextExpectedNumber]",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = GoogleColors.Blue
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (!isFinished) {
+                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { resetTrail(it) })
+                GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = totalAttempts, errors = totalErrors, activeDifficulty = activeDifficulty)
 
-            if (isFinished) {
-                VictoryCard(
-                    message = completionMessage,
+                Text(
+                    text = "Tap Next Target: [$nextExpectedNumber]",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = GoogleColors.Blue
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (isFinished && lastMetrics != null) {
+                ClinicalGameResultCard(
+                    metrics = lastMetrics!!,
+                    analysis = sessionAnalysis,
                     selectedLanguageCode = selectedLanguageCode,
-                    onPlayAgain = { resetWholeGame() }
+                    onPlayAgain = { recDiff -> resetTrail(recDiff) },
+                    onBackToHub = onBack
                 )
             } else {
-                val infiniteTransition = rememberInfiniteTransition(label = "targetPulse")
-                val targetPulseScale by infiniteTransition.animateFloat(
-                    initialValue = 1.0f,
-                    targetValue = 1.10f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(500, easing = FastOutSlowInEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "pulse"
-                )
-
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(if (targetMax <= 8) 3 else 3),
+                    columns = GridCells.Fixed(3),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -1150,67 +1676,78 @@ private fun AscendingTrailMakingGameView(
                             else -> NerColors.SurfaceWhite
                         }
 
-                        val textColor = if (isCompleted || isTarget) Color.White else NerColors.Charcoal
-
                         Card(
                             modifier = Modifier
-                                .aspectRatio(1f)
-                                .scale(if (isTarget) targetPulseScale else 1.0f)
-                                .clip(CircleShape)
-                                .clickable {
+                                .fillMaxWidth()
+                                .height(85.dp)
+                                .clip(RoundedCornerShape(18.dp))
+                                .clickable(enabled = !isCompleted) {
+                                    totalAttempts++
                                     if (num == nextExpectedNumber) {
-                                        nextExpectedNumber++
-                                        if (nextExpectedNumber > targetMax) {
-                                            if (currentRound < maxRound) {
-                                                currentRound++
-                                            } else {
-                                                val elapsed = System.currentTimeMillis() - startTime
-                                                val telemetry = GameSessionTelemetry(
+                                        if (nextExpectedNumber == targetMax) {
+                                            val durationMs = elapsedSeconds * 1000L
+                                            val accuracy = if (totalAttempts > 0) (targetMax.toDouble() / totalAttempts).coerceIn(0.0, 1.0) else 1.0
+                                            val telemetry = GameSessionTelemetry(
+                                                gameType = "trail_making",
+                                                accuracy = accuracy,
+                                                responseTimeMs = durationMs,
+                                                attempts = totalAttempts,
+                                                errors = totalErrors,
+                                                completionRate = 1.0
+                                            )
+                                            val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
+                                            CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+
+                                            val metrics = GameSessionMetrics(
+                                                durationMs = durationMs,
+                                                accuracy = accuracy,
+                                                attempts = totalAttempts,
+                                                errors = totalErrors,
+                                                hintsUsed = 0,
+                                                completionRate = 1.0,
+                                                gameType = "trail_making"
+                                            )
+                                            lastMetrics = metrics
+
+                                            coroutineScope.launch {
+                                                val analysis = SmaranAiClient.analyzeSession(
+                                                    context = context,
                                                     gameType = "trail_making",
-                                                    accuracy = 1.0,
-                                                    responseTimeMs = elapsed,
-                                                    attempts = targetMax,
-                                                    errors = 0,
-                                                    completionRate = 1.0
+                                                    currentDifficulty = activeDifficulty,
+                                                    accuracy = accuracy,
+                                                    completionRate = 1.0,
+                                                    responseTimeMs = durationMs,
+                                                    errors = totalErrors,
+                                                    hintsUsed = 0
                                                 )
-                                                val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
-                                                completionMessage = result.encouragementPrompt
-                                                CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
-                                                coroutineScope.launch {
-                                                    SmaranAiClient.predictDifficulty(
-                                                        context = context,
-                                                        gameType = telemetry.gameType,
-                                                        currentDifficulty = result.hiddenDifficulty,
-                                                        accuracy = telemetry.accuracy,
-                                                        completionRate = telemetry.completionRate,
-                                                        responseTimeMs = telemetry.responseTimeMs,
-                                                        errors = telemetry.errors,
-                                                        hintsUsed = telemetry.hintsUsed
-                                                    )
-                                                }
-                                                onAssessmentUpdated(result)
+                                                sessionAnalysis = analysis
                                                 isFinished = true
-                                                MultilingualManager.speak(result.encouragementPrompt, selectedLanguageCode)
+                                                MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
                                             }
+                                            onAssessmentUpdated(result)
+                                        } else {
+                                            nextExpectedNumber++
                                         }
+                                    } else {
+                                        totalErrors++
                                     }
                                 },
-                            shape = CircleShape,
+                            shape = RoundedCornerShape(18.dp),
                             colors = CardDefaults.cardColors(containerColor = btnBg),
                             elevation = CardDefaults.cardElevation(defaultElevation = if (isTarget) 6.dp else 2.dp),
                             border = CardDefaults.outlinedCardBorder().copy(
                                 brush = androidx.compose.ui.graphics.SolidColor(
-                                    if (isTarget) GoogleColors.Yellow else NerColors.NeutralBorder
+                                    if (isTarget) GoogleColors.Blue else NerColors.NeutralBorder
                                 ),
-                                width = if (isTarget) 3.dp else 1.dp
+                                width = if (isTarget) 2.dp else 1.dp
                             )
                         ) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(
                                     text = "$num",
-                                    fontSize = 34.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = textColor
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (isCompleted || isTarget) Color.White else NerColors.Charcoal
                                 )
                             }
                         }
@@ -1219,83 +1756,12 @@ private fun AscendingTrailMakingGameView(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        IosBackPillButton(
-            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
-            onClick = onBack
-        )
-    }
-}
-
-@Composable
-private fun VictoryCard(
-    message: String,
-    selectedLanguageCode: String,
-    onPlayAgain: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 20.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .clip(CircleShape)
-                    .background(GoogleColors.Green.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = GoogleColors.Green, modifier = Modifier.size(38.dp))
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Text(
-                text = MultilingualManager.tr("app_title", selectedLanguageCode),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = NerColors.Charcoal
+        if (!isFinished) {
+            Spacer(modifier = Modifier.height(10.dp))
+            IosBackPillButton(
+                label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+                onClick = onBack
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = message,
-                fontSize = 14.sp,
-                color = NerColors.NeutralMedium,
-                textAlign = TextAlign.Center,
-                lineHeight = 20.sp
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(
-                onClick = onPlayAgain,
-                colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = MultilingualManager.tr("btn_play_again", selectedLanguageCode),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
         }
     }
 }
