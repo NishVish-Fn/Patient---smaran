@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
+package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import android.Manifest
 import android.app.Activity
@@ -486,14 +486,14 @@ fun BeaconTrackerPanel(
                     val ping = latestPing
                     if (ping != null) {
                         Text(
-                            text = "ðŸ“ ${ping.address}",
+                            text = ping.address,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = NerColors.Charcoal
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = String.format(Locale.US, "GPS: %.5f, %.5f (Â±%dm)", ping.latitude, ping.longitude, ping.accuracy.toInt()),
+                            text = String.format(Locale.US, "GPS: %.5f, %.5f (±%dm)", ping.latitude, ping.longitude, ping.accuracy.toInt()),
                             fontSize = 12.sp,
                             color = NerColors.NeutralMedium
                         )
@@ -581,7 +581,7 @@ fun BeaconTrackerPanel(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(deviceName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = NerColors.Charcoal)
-                            Text("100% On-Device GPS Sentinel â€¢ Zero Cloud Tracking", fontSize = 11.sp, color = NerColors.NeutralMedium)
+                            Text("100% On-Device GPS Sentinel • Zero Cloud Tracking", fontSize = 11.sp, color = NerColors.NeutralMedium)
                         }
                     }
                 }

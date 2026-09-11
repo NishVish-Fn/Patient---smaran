@@ -399,7 +399,7 @@ private fun GameHubSelectionView(
                             GameReminderManager.triggerTestAlarmInSeconds(context, 3)
                             android.widget.Toast.makeText(
                                 context,
-                                "ðŸ”” Alarm will trigger in 3 seconds! Turn screen OFF or close app now.",
+                                "Alarm will trigger in 3 seconds! Turn screen OFF or close app now.",
                                 android.widget.Toast.LENGTH_LONG
                             ).show()
                         },
@@ -978,8 +978,11 @@ private fun FullScreenMemoryMatchingGameView(
             .navigationBarsPadding()
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
+        val resultScrollState = rememberScrollState()
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .then(if (isGameFinished) Modifier.verticalScroll(resultScrollState) else Modifier),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -1187,8 +1190,11 @@ private fun FullScreenPatternSequenceGameView(
             .navigationBarsPadding()
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
+        val resultScrollState = rememberScrollState()
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .then(if (isFinished) Modifier.verticalScroll(resultScrollState) else Modifier),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -1529,8 +1535,11 @@ private fun ColorStroopChallengeGameView(
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        val resultScrollState = rememberScrollState()
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .then(if (isFinished) Modifier.verticalScroll(resultScrollState) else Modifier),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -1688,8 +1697,11 @@ private fun AscendingTrailMakingGameView(
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        val resultScrollState = rememberScrollState()
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .then(if (isFinished) Modifier.verticalScroll(resultScrollState) else Modifier),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(

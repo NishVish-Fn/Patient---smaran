@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
+package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -173,7 +174,7 @@ fun MemoryVaultPanel(
                                     .padding(horizontal = 14.dp, vertical = 10.dp)
                             ) {
                                 Text(
-                                    text = "ðŸ’¡ Clue: ${currentCard.cueText}",
+                                    text = "Hint: ${currentCard.cueText}",
                                     fontSize = 13.sp,
                                     color = NerColors.NeutralMedium,
                                     lineHeight = 18.sp
@@ -246,8 +247,8 @@ fun MemoryVaultPanel(
                             Spacer(modifier = Modifier.height(14.dp))
                             val wasCorrect = selectedOptionIndex == currentCard.correctIndex
                             Text(
-                                text = if (wasCorrect) "ðŸŽ‰ Wonderful memory! You remembered correctly."
-                                else "â¤ï¸ Beautiful memory. That's always close to our hearts.",
+                                text = if (wasCorrect) "Wonderful memory! You remembered correctly."
+                                else "Beautiful memory. That's always close to our hearts.",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (wasCorrect) NerColors.SecondaryDark else NerColors.PrimaryDark,
@@ -292,7 +293,12 @@ fun MemoryVaultPanel(
                                 .background(NerColors.PrimaryTint),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("ðŸ‘¨â€ðŸ‘©â€ðŸ‘§â€ðŸ‘¦", fontSize = 40.sp)
+                            Icon(
+                                imageVector = Icons.Default.CollectionsBookmark,
+                                contentDescription = null,
+                                tint = NerColors.Primary,
+                                modifier = Modifier.size(38.dp)
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))

@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.service
+package net.kibotu.geofencerelay.service
 
 import android.annotation.SuppressLint
 import android.app.NotificationManager
@@ -377,7 +377,7 @@ class TrackerForegroundService : Service() {
                 } else if (isInside && isCurrentlyBreached) {
                     isCurrentlyBreached = false
                     NotificationHelper.cancelBreachNotification(this@TrackerForegroundService)
-                    updateNotification("ðŸŸ¢ Back inside ${zone?.name ?: "Safe Zone"}")
+                    updateNotification("Back inside ${zone?.name ?: "Safe Zone"}")
                     requestLocationUpdates(isHighFrequency = false)
 
                     val alert = BreachAlert(

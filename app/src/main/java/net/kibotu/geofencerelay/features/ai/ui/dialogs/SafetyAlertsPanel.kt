@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
+package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import android.content.Context
 import android.content.Intent
@@ -240,7 +240,7 @@ fun SafetyAlertsPanel(
                             color = Color.White
                         )
                         Text(
-                            text = if (hasHomeSet) "ðŸ“ Destination: ${homeAddress.ifBlank { "Saved Coordinates ($homeLat, $homeLon)" }}" else "âš ï¸ Tap to set your home address or capture GPS",
+                            text = if (hasHomeSet) "Destination: ${homeAddress.ifBlank { "Saved Coordinates ($homeLat, $homeLon)" }}" else "Tap to set your home address or capture GPS",
                             fontSize = 11.sp,
                             color = Color.White.copy(alpha = 0.9f),
                             maxLines = 1
@@ -410,7 +410,7 @@ fun SafetyAlertsPanel(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "ðŸ“ Set",
+                                text = "Set",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = NerColors.Primary,
