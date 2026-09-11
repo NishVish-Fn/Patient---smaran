@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -203,40 +204,41 @@ fun GoogleSignInScreen(
             ) {
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Language Switcher Row at Top of Login Screen
+                // Language Switcher Row at Top of Login Screen (High Contrast, Clean Typography, Zero Emojis)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
-                        .padding(bottom = 10.dp),
-                    horizontalArrangement = Arrangement.Center
+                        .padding(vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     MultilingualManager.supportedLanguages.forEach { lang ->
                         val isSelected = lang.code == selectedLanguageCode
-                        Box(
+                        Surface(
                             modifier = Modifier
-                                .padding(horizontal = 3.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (isSelected) saffronGold.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.08f))
-                                .border(
-                                    1.dp,
-                                    if (isSelected) saffronGold else Color.White.copy(alpha = 0.15f),
-                                    RoundedCornerShape(12.dp)
-                                )
+                                .clip(RoundedCornerShape(20.dp))
                                 .clickable {
                                     selectedLanguageCode = lang.code
                                     settingsPrefs.edit().putString("selected_language", lang.code).commit()
-                                }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                },
+                            shape = RoundedCornerShape(20.dp),
+                            color = if (isSelected) NerColors.Primary else NerColors.SurfaceWhite,
+                            shadowElevation = if (isSelected) 3.dp else 1.dp,
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) NerColors.PrimaryDark else NerColors.NeutralBorder
+                            )
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(lang.flagEmoji, fontSize = 13.sp)
-                                Spacer(modifier = Modifier.width(4.dp))
+                            Box(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(
                                     text = lang.nativeName,
-                                    fontSize = 11.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) saffronGold else Color.White.copy(alpha = 0.85f)
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                                    color = if (isSelected) Color.White else NerColors.Charcoal
                                 )
                             }
                         }
@@ -417,7 +419,7 @@ fun GoogleSignInScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // âš¡ Quick Device Access (Continue as This Device)
+                    // Quick Device Access (Continue with This Device)
                     OutlinedButton(
                         onClick = {
                             val devEmail = "patient.${android.os.Build.MODEL.replace(' ', '_').lowercase()}@smaran.local"
@@ -425,18 +427,29 @@ fun GoogleSignInScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.2.dp, saffronGold.copy(alpha = 0.7f)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = saffronGold)
+                            .defaultMinSize(minHeight = 52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.5.dp, NerColors.Primary),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = NerColors.PrimaryTint.copy(alpha = 0.25f),
+                            contentColor = NerColors.PrimaryDark
+                        ),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                     ) {
-                        Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = saffronGold, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.PhoneAndroid,
+                            contentDescription = null,
+                            tint = NerColors.Primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = MultilingualManager.tr("auth_quick_access", selectedLanguageCode),
-                            color = saffronGold,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
+                            color = NerColors.PrimaryDark,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
 

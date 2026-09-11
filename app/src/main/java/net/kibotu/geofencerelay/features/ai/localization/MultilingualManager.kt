@@ -14,13 +14,13 @@ data class LanguageItem(
 object MultilingualManager {
 
     val supportedLanguages = listOf(
-        LanguageItem("en", "English", "English", "🌐"),
-        LanguageItem("hi", "Hindi", "हिंदी", "🇮🇳"),
-        LanguageItem("as", "Assamese", "অসমীয়া", "🌿"),
-        LanguageItem("lus", "Mizo", "Mizo ṭawng", "🏔️"),
-        LanguageItem("kha", "Khasi", "Ka Ktien Khasi", "🌲"),
-        LanguageItem("mni", "Manipuri", "মৈতৈলোন্", "🌺"),
-        LanguageItem("nag", "Nagamese", "Nagamese", "⛰️")
+        LanguageItem("en", "English", "English", ""),
+        LanguageItem("hi", "Hindi", "हिंदी", ""),
+        LanguageItem("as", "Assamese", "অসমীয়া", ""),
+        LanguageItem("lus", "Mizo", "Mizo ṭawng", ""),
+        LanguageItem("kha", "Khasi", "Ka Ktien Khasi", ""),
+        LanguageItem("mni", "Manipuri", "মৈতৈলোন্", ""),
+        LanguageItem("nag", "Nagamese", "Nagamese", "")
     )
 
     // Full UI String Translations Dictionary
@@ -145,13 +145,13 @@ object MultilingualManager {
             "nag" to "Etu Device Yaad Rakhibi (Always Login)"
         ),
         "auth_quick_access" to mapOf(
-            "en" to "⚡ Quick Device Access (Continue as This Device)",
-            "hi" to "⚡ त्वरित डिवाइस प्रवेश (इस डिवाइस के रूप में जारी रखें)",
-            "as" to "⚡ দ্ৰুত ডিভাইচ প্ৰৱেশ (এই ডিভাইচ হিচাপে আগবাঢ়ক)",
-            "lus" to "⚡ Khawl Hman Zung Zungna",
-            "kha" to "⚡ Ka Jingrung Kloi",
-            "mni" to "⚡ য়াংনা দিভাইস চংবা",
-            "nag" to "⚡ Jaldi Device Access"
+            "en" to "Continue with This Device",
+            "hi" to "इस डिवाइस के साथ जारी रखें",
+            "as" to "এই ডিভাইচৰ সৈতে আগবাঢ়ক",
+            "lus" to "He Khawl Hian Chhunzawm Rawh",
+            "kha" to "Iaibteng da kane ka Khawl",
+            "mni" to "দিভাইস অসিগা লোয়ননা চৎথবীউ",
+            "nag" to "Etu Device Logot Aage Barhibi"
         ),
         "auth_signing_in" to mapOf(
             "en" to "Signing In...",
