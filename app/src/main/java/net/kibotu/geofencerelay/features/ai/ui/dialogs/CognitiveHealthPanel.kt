@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
+package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -151,7 +151,7 @@ fun CognitiveHealthPanel(
             Spacer(modifier = Modifier.height(16.dp))
 
             if (selectedTab == 0) {
-                // â”€â”€ TAB 0: COGNITIVE STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // --- TAB 0: COGNITIVE STATS ---
                 if (anomalyReport != null && anomalyReport.anomalyDetected) {
                     Card(
                         modifier = Modifier
@@ -416,7 +416,7 @@ fun CognitiveHealthPanel(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             } else {
-                // â”€â”€ TAB 1: DAILY SCORECARDS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // --- TAB 1: DAILY SCORECARDS ---
                 if (scorecards.isEmpty()) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),

@@ -295,7 +295,7 @@ fun SafetyAlertsPanel(
                                 .background(NerColors.SecondaryTint)
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Text("â— SECURE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = NerColors.SecondaryDark)
+                            Text("SECURE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = NerColors.SecondaryDark)
                         }
                     }
 

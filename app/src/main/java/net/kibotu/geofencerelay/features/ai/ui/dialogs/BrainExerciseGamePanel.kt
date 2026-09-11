@@ -288,7 +288,7 @@ private fun GameHubSelectionView(
                                         GameReminderManager.setReminderInterval(context, pair.first)
                                         android.widget.Toast.makeText(
                                             context,
-                                            "â° Reminder interval set to ${pair.second}. Alarm is armed!",
+                                            "Reminder interval set to ${pair.second}. Alarm is armed!",
                                             android.widget.Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -1305,10 +1305,10 @@ private fun ColorStroopChallengeGameView(
     var activeDifficulty by remember { mutableStateOf(SmaranAiClient.getRecommendedDifficulty(context, "stroop_challenge")) }
 
     val colorOptions = listOf(
-        Triple("BLUE", "Blue / à¤¨à¥€à¤²à¤¾", GoogleColors.Blue),
-        Triple("RED", "Red / à¤²à¤¾à¤²", GoogleColors.Red),
-        Triple("GREEN", "Green / à¤¹à¤°à¤¾", GoogleColors.Green),
-        Triple("YELLOW", "Yellow / à¤ªà¥€à¤²à¤¾", GoogleColors.Yellow)
+        Triple("BLUE", MultilingualManager.tr("color_blue", selectedLanguageCode), GoogleColors.Blue),
+        Triple("RED", MultilingualManager.tr("color_red", selectedLanguageCode), GoogleColors.Red),
+        Triple("GREEN", MultilingualManager.tr("color_green", selectedLanguageCode), GoogleColors.Green),
+        Triple("YELLOW", MultilingualManager.tr("color_yellow", selectedLanguageCode), GoogleColors.Yellow)
     )
 
     val totalRounds = when (activeDifficulty.lowercase()) {
@@ -1517,8 +1517,8 @@ private fun ColorStroopChallengeGameView(
                         ) {
                             Text(
                                 text = colorOption.second,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.ExtraBold,
                                 color = Color.White
                             )
                         }

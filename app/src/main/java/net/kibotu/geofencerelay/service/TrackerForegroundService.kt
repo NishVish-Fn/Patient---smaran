@@ -359,7 +359,7 @@ class TrackerForegroundService : Service() {
                         zone?.name ?: "Safe Zone",
                         distance - (zone?.radiusMeters ?: 0.0)
                     )
-                    updateNotification("âš ï¸ OUTSIDE SAFE ZONE (${LocationUtils.formatDistance(distance)} from center)")
+                    updateNotification("OUTSIDE SAFE ZONE (${LocationUtils.formatDistance(distance)} from center)")
                     requestLocationUpdates(isHighFrequency = true)
 
                     val alert = BreachAlert(
