@@ -61,9 +61,6 @@ fun SafetyAlertsPanel(
 
     var showEditDialog by remember { mutableStateOf(false) }
 
-    var medTaken by remember { mutableStateOf(false) }
-    var waterTaken by remember { mutableStateOf(false) }
-
     val hasHomeSet = homeAddress.isNotBlank() || (homeLat != 0.0 && homeLon != 0.0)
 
     fun launchTakeMeHome() {
@@ -385,10 +382,10 @@ fun SafetyAlertsPanel(
                     ) {
                         Text(MultilingualManager.tr("safety_caregiver", selectedLanguageCode), fontSize = 13.sp, color = NerColors.NeutralMedium)
                         Text(
-                            text = if (caregiverPhone.isNotBlank()) "$caregiverName ($caregiverPhone)" else "$caregiverName (Tap âœï¸ to add)",
+                            text = if (caregiverPhone.isNotBlank()) "$caregiverName ($caregiverPhone)" else caregiverName,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (caregiverPhone.isNotBlank()) NerColors.SecondaryDark else NerColors.Primary
+                            color = if (caregiverPhone.isNotBlank()) NerColors.SecondaryDark else NerColors.Charcoal
                         )
                     }
 
@@ -425,101 +422,7 @@ fun SafetyAlertsPanel(
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // DAILY WELLNESS & CARE CHECKLIST
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                border = BorderStroke(1.dp, NerColors.NeutralBorder)
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = MultilingualManager.tr("safety_wellness", selectedLanguageCode),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NerColors.Charcoal
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Medication Check
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(if (medTaken) NerColors.SecondaryTint else NerColors.NeutralSoft)
-                            .clickable { medTaken = !medTaken }
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Medication, contentDescription = null, tint = NerColors.Crimson, modifier = Modifier.size(22.dp))
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    MultilingualManager.tr("safety_meds", selectedLanguageCode),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = NerColors.Charcoal
-                                )
-                                Text(
-                                    if (medTaken) "Taken today âœ“" else "Tap to mark taken",
-                                    fontSize = 11.sp,
-                                    color = if (medTaken) NerColors.SecondaryDark else NerColors.NeutralMedium
-                                )
-                            }
-                        }
-                        Icon(
-                            imageVector = if (medTaken) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                            contentDescription = null,
-                            tint = if (medTaken) NerColors.Secondary else NerColors.NeutralMedium
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Hydration Check
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(if (waterTaken) NerColors.TertiaryTint else NerColors.NeutralSoft)
-                            .clickable { waterTaken = !waterTaken }
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.WaterDrop, contentDescription = null, tint = NerColors.Tertiary, modifier = Modifier.size(22.dp))
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    MultilingualManager.tr("safety_hydration", selectedLanguageCode),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = NerColors.Charcoal
-                                )
-                                Text(
-                                    if (waterTaken) "Drank water âœ“" else "Tap to mark completed",
-                                    fontSize = 11.sp,
-                                    color = if (waterTaken) NerColors.TertiaryDark else NerColors.NeutralMedium
-                                )
-                            }
-                        }
-                        Icon(
-                            imageVector = if (waterTaken) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                            contentDescription = null,
-                            tint = if (waterTaken) NerColors.Tertiary else NerColors.NeutralMedium
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         // Accessible Bottom Back Pill

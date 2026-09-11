@@ -153,7 +153,6 @@ private fun GameHubSelectionView(
 ) {
     val context = LocalContext.current
     var reminderInterval by remember { mutableStateOf(GameReminderManager.getReminderInterval(context)) }
-    val latestCps = remember { SmaranAiClient.getLatestCpsScore(context) }
 
     Column(
         modifier = Modifier
@@ -192,94 +191,7 @@ private fun GameHubSelectionView(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // SMARAN AI Cognitive Performance & Status Header Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder),
-                    width = 1.dp
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(GoogleColors.Blue.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Psychology, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(28.dp))
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (latestCps != null) {
-                                Text(
-                                    "CPS: ${latestCps.roundToInt()} / 100",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                    color = NerColors.Charcoal
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(GoogleColors.Green.copy(alpha = 0.15f))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        "AI Active",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = GoogleColors.Green
-                                    )
-                                }
-                            } else {
-                                Text(
-                                    "CPS: -- / 100",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp,
-                                    color = NerColors.Charcoal
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(NerColors.NeutralSoft)
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        "Untested",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = NerColors.NeutralMedium
-                                    )
-                                }
-                            }
-                        }
-                        Text(
-                            text = if (latestCps != null)
-                                "Difficulty automatically tuned by ML Pipeline"
-                            else
-                                "Play your first game to compute initial CPS baseline",
-                            fontSize = 11.sp,
-                            color = NerColors.NeutralMedium
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Game 1: Memory Match
             val memDiff = remember { SmaranAiClient.getRecommendedDifficulty(context, "memory_matching") }
@@ -472,18 +384,7 @@ private fun GameSelectionCard(
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(color.copy(alpha = 0.15f))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text("AI Level: $aiDifficulty", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = color)
-                    }
-                }
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(desc, fontSize = 11.sp, color = NerColors.NeutralMedium, lineHeight = 15.sp)
             }
