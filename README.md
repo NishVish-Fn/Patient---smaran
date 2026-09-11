@@ -1,105 +1,111 @@
-﻿# Smaran â€” Assistive Sentinel & Cognitive Care Platform (Patient App)
+﻿# Smaran — Assistive Sentinel & Cognitive Care Platform (Patient Tracker)
 
 <p align="center">
   <img src="app/src/main/res/drawable/smaran_logo.png" alt="Smaran Logo" width="120" />
 </p>
 
-A modern Android application built in Kotlin, Jetpack Compose, and OpenStreetMap combining a **Zero-Cloud GPS Sentinel & Safety Beacon** with an on-device clinical cognitive health engine. 
+A state-of-the-art Android assistive application engineered with **Kotlin**, **Jetpack Compose**, and **OpenStreetMap (OSMDroid)**. Smaran pairs an ultra-reliable **Zero-Cloud GPS Sentinel & Safety Beacon** with an autonomous, on-device **Clinical Cognitive Health & Brain Exercise Engine**.
 
-Designed specifically for elder care and dementia/Alzheimer's patients, Smaran combines an authentic **Apple iOS Assistive Access** senior-friendly ergonomic UI with vibrant, high-contrast visual cues and artistic cultural motifs from Northeast India (Assam, Meghalaya, Manipur, Mizoram, Nagaland).
+Tailored specifically for elder care, early memory support, and Alzheimer's/dementia assistance, Smaran combines an ergonomic **Apple iOS Assistive Access** senior-friendly interface with a soothing dark-whitish aesthetic, high-contrast typography, and artistic motifs inspired by Northeast India (Assam, Meghalaya, Manipur, Mizoram, Nagaland).
 
 ---
 
-## ðŸ“¦ Pre-Built Release APK
+## 📦 Pre-Built Release APK (Tracker Mod)
 
-The pre-built, production-ready APK is included directly within this repository:
+The pre-built, production-ready Tracker APK is included directly within this repository:
 
-* **Download APK**: [release/Smaran-Tracker-v1.0.apk](release/Smaran-Tracker-v1.0.apk)
+* **Download Tracker APK**: [release/Smaran-Tracker-v1.0.apk](release/Smaran-Tracker-v1.0.apk)
+* **Application Role**: Patient Device (Tracker & Cognitive Companion)
 * **Package Name**: `net.kibotu.geofencerelay.tracker`
 * **Version**: 1.0.0
-* **Target Android Version**: Android 8.0 (API 26) through Android 14 (API 34)
+* **Target Android Compatibility**: Android 8.0 (API 26) through Android 14 (API 34)
 
 ---
 
-## ðŸŒŸ Key Features & Architecture
+## 🌟 Core Features & Architecture
 
-### 1. ðŸš¨ Critical Safety Alarms & Wake-Up Screen
-- **Full-Screen Wake-up Activity (`AlarmFullScreenActivity`)**: Triggers high-priority alerts with `FLAG_KEEP_SCREEN_ON`, `FLAG_SHOW_WHEN_LOCKED`, and `FLAG_TURN_SCREEN_ON`. Wakes the device screen even when locked or asleep.
-- **Ringtone & Vibration Engine**: High-urgency pulsating audio alerts using system alarm streams combined with continuous tactile vibration pulses.
-- **High-Contrast Google-Style Floating Animations**: Dark-themed screen with pulsating, vibrant Google-style glowing orbs and quick-action acknowledgment buttons.
-- **Boot Recovery (`BootReceiver`)**: Automatically reschedules active patient alarms immediately upon device reboot.
+### 1. 🧠 Autonomous On-Device AI Cognitive Engine (CPS Engine)
+- **Mathematical ML Model Port**: Emulates an ensemble XGBoost and Random Forest clinical scoring model in pure Kotlin (`CpsEngine.kt`), operating in $<1\text{ms}$ on-device with zero cloud latency.
+- **Autonomous Difficulty Tuning**: The AI engine dynamically selects and scales game challenge across **Easy**, **Medium**, and **Hard** in real time based on player reaction latency, accuracy percentage, and error-recovery patterns.
+- **Objective Clinical Telemetry**:
+  - Memory Retention Index (0–100%)
+  - Executive Function Index (0–100%)
+  - Reaction Latency & Speed Score
+  - Autobiographical Reminiscence Index
+  - Error Recovery & Adaptive Resilience
+  - Biomotor Fine-Jitter and Acoustic Speech Diagnostics
+- **Lifetime Persistent Cognitive History**: All session results and cumulative CPS metrics are permanently tracked in local persistent storage (`CognitiveHistoryManager.kt`), surviving reboots and updates.
+- **Daily Scorecards History**: Patients and clinicians can inspect past sessions with granular timestamps, game categories, AI difficulty levels, and personalized therapeutic guidance.
+- **Dignity & Stigma Safeguards**: Avoids negative clinical labeling ("impaired", "failed"); framed constructively as uplifting memory journeys.
 
-### 2. ðŸ§  100% On-Device Cognitive Performance Scoring (CPS Engine)
-- **Mathematical Clinical Port**: Emulates an XGBoost + Random Forest ensemble model in pure Kotlin (`CpsEngine.kt`) executing in $<1\text{ms}$ directly in memory.
-- **Multi-Domain Assessment**:
-  - Functional Cognitive Age vs. Biological Age
-  - Memory Retention Index (0â€“100%)
-  - Executive Function Index (0â€“100%)
-  - Reaction Latency & Error Recovery Metrics
-  - 30-Day & 90-Day Cognitive Trajectory Forecasts
-- **Zero Stigma Safeguards**: Completely eliminates clinical stigma tags ("Impaired", "Dementia", "Failure"). All exercises are presented encouragingly as *"Daily Memory Journeys"*.
+### 2. 🎮 Cognitive Brain Exercise Suite
+- **Memory Card Match**: Senior-friendly card tiles with high touch targets, dynamic tactile feedback, and progressive pairs.
+- **Pattern Recall**: Sequential visual pattern flash exercises that stimulate short-term working memory without cognitive exhaustion.
+- **Color Stroop Challenge**: High-contrast chromatic Stroop conflict assessments testing cognitive inhibition and executive attention.
+- **Ascending Trail Making Game**: Sequential numerical Trail Making Test (TMT-A) measuring processing speed, visual scanning, and motor coordination.
 
-### 3. ðŸŽ® Cognitive Training Games
-- **Memory Card Match**: Large, high-contrast card tiles designed for high touch targets and elder dexterity. Dynamic card shuffling and instant feedback.
-- **Pattern Recall**: Sequential cognitive flash exercises that build short-term working memory without frustrating difficulty spikes.
-- **Adaptive Difficulty**: Dynamically adapts grid size and timing based on real-time latency without exposing difficulty levels.
+### 3. 🖼️ Autobiographical Reminiscence Memory Vault
+- Interactive family reminiscence cards with high-contrast portraits, names, relationships, and voice recordings.
+- Provides immediate autobiographical recall and emotional grounding during disorientation, sundowning, or memory lapses.
 
-### 4. ðŸ–¼ï¸ Autobiographical Reminiscence Memory Vault
-- Interactive family reminiscence cards with high-contrast imagery, personal names, relationships, and voice prompts.
-- Promotes autobiographical recall and emotional grounding during periods of disorientation or agitation.
+### 4. 📍 GPS Beacon Sentinel & Safe Zone Geofencing
+- **Real-Time GPS Broadcaster (`TrackerForegroundService`)**: Securely broadcasts live patient coordinates over lightweight, decentralized MQTT topics to paired caregiver devices.
+- **Wandering Geofence Sentinel**: Triggers immediate alerts when the patient exits pre-configured safe zones.
+- **One-Tap "Take Me Home" Navigation**: Instantly opens navigation back to the patient's verified home address using native map routing or open turn-by-turn navigation.
+- **Crash-Resistant Foreground Operation**: Battery-optimized foreground service with proactive runtime permission handling.
 
-### 5. ðŸ“ GPS Beacon & Safe Zone Sentinel
-- **Real-Time GPS Broadcaster (`TrackerForegroundService`)**: Broadcasts accurate coordinates over a lightweight MQTT protocol to authorized caregivers.
-- **Safe Zone Geofencing**: Alerts caregivers if patient wanders outside of designated safety boundaries.
-- **"Show Directions Home"**: One-tap navigation taking the patient directly back to their saved home coordinates via native navigation apps or open maps.
-- **Crash-Resistant Foreground Service**: Safe permission and location service checks preventing unexpected closures.
+### 5. 🚨 Critical Safety Alarms & Wake-Up System
+- **Full-Screen Wake-up Activity (`AlarmFullScreenActivity`)**: Overrides lock screens using `FLAG_SHOW_WHEN_LOCKED`, `FLAG_TURN_SCREEN_ON`, and `FLAG_KEEP_SCREEN_ON` for urgent safety checks.
+- **Auditory & Haptic Pulses**: High-urgency pulsating alarm tones paired with continuous vibration patterns.
+- **Boot Recovery (`BootReceiver`)**: Automatically reschedules alarms and resumes tracking immediately upon device reboot.
 
-### 6. ðŸ—£ï¸ Multilingual Regional Support & TTS Audio
-- **Full UI & Audio Guidance in 7 Regional Dialects**:
+### 6. 🗣️ Multilingual Regional Support & TTS Voice Guidance
+- **7 Regional Dialects Supported**:
   - English
-  - Hindi (à¤¹à¤¿à¤¨à¥à¤¦à¥€)
-  - Assamese (à¦…à¦¸à¦®à§€à¦¯à¦¼à¦¾)
-  - Mizo (Mizo á¹­awng)
+  - Hindi (हिन्दी)
+  - Assamese (অসমীয়া)
+  - Mizo (Mizo ṭawng)
   - Khasi (Ka Ktien Khasi)
-  - Manipuri (à¦®à§ˆà¦¤à§ˆà¦²à§‹à¦¨à§)
+  - Manipuri (মৈতৈলোন্)
   - Nagamese
-- Integrated Android `TextToSpeech` audio announcements across all tabs and exercises.
+- Integrated Android `TextToSpeech` vocal guidance for every navigation action, prompt, and exercise instruction.
 
-### 7. ðŸŽ¨ Northeast India Regional Artistic Motifs
-- Curated cultural motifs and traditional artistic styling representing the rich heritage of Northeast India:
-  - **Assam**: Golden Muga silk and iconic Japi motifs.
-  - **Meghalaya**: Living Root Bridges and sacred Khasi hill patterns.
-  - **Manipur**: Elegant Pung Cholom drum rhythms and Loktak lake phumdis.
-  - **Mizoram**: Intricate Puan textile geometric weaves.
-  - **Nagaland**: Vibrant warrior shawls and ceremonial motifs.
+### 7. 🎨 Senior-Centric Design System
+- **Dark-Whitish Ergonomics**: Ultra-clean cream and ivory backgrounds (`#FBF9F5` / `#F3EFEA`) paired with deep charcoal typography (`#1C1B1F`) for optimal contrast and reduced eye strain.
+- **Accessibility**: Minimum touch targets of 48–56dp, oversized tactile buttons, clear status badges, and no text clipping.
+- **Cultural Identity**: Authentic aesthetic accents inspired by Northeast India's heritage.
 
 ---
 
-## ðŸ› ï¸ Build & Development
+## 🔒 Privacy & Local Processing
+
+- **100% Local Processing**: All cognitive calculations, game scores, and personal reminiscence data remain strictly on the local device.
+- **Zero Cloud Account Mandate**: Does not lock patient data into proprietary subscription servers or commercial cloud APIs.
+
+---
+
+## 🛠️ Build & Development
 
 ### Requirements
-- Android SDK 34
-- JDK 17 or JDK 21
+- Android SDK 34 (Android 14)
+- JDK 17 or JDK 21 (e.g., Android Studio JBR)
 - Gradle 8.2+
 
-### Building from Source
+### Building the Tracker App from Source
 
 ```powershell
-# Build Patient Tracker APK
-.\gradlew.bat assembleTrackerDebug
+# Set Java Home (adjust path as needed)
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 
-# Build Guardian APK
-.\gradlew.bat assembleGuardianDebug
+# Build Tracker APK
+.\gradlew assembleTrackerDebug
 
 # Run Unit Tests
-.\gradlew.bat testTrackerDebugUnitTest
+.\gradlew testTrackerDebugUnitTest
 ```
 
-The output APK will be placed at:
+The compiled APK will be generated at:
 `app/build/outputs/apk/tracker/debug/app-tracker-debug.apk`
 
----
-
-## ðŸ”’ Privacy & Local Processing
-- **Zero Cloud API Billing / Zero Vendor Lock-in**: Coordinates relay through lightweight MQTT brokers (`broker.hivemq.com`) and open map tiles.
-- **Strictly Local Patient Telemetry**: All memory game scores, cognitive calculations, and personal family vault details remain 100% on the local device.
+And the distribution release APK is located at:
+`release/Smaran-Tracker-v1.0.apk`
