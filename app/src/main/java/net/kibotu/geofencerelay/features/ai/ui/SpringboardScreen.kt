@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.ui
+package net.kibotu.geofencerelay.features.ai.ui
 
 import android.content.Context
 import androidx.compose.animation.*
@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.kibotu.geofencerelay.R
+import net.kibotu.geofencerelay.features.ai.history.CognitiveHistoryManager
 import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.model.CpsAssessmentResult
 import net.kibotu.geofencerelay.features.ai.reminder.GameReminderManager
@@ -83,8 +84,8 @@ fun SpringboardScreen(
         mutableStateOf(prefs.getString("selected_language", "en") ?: "en")
     }
 
-    // Start with unassessed state: NO fake score displayed until the user plays a game!
-    var currentAssessment by remember { mutableStateOf<CpsAssessmentResult?>(null) }
+    // Lifetime persistent cognitive assessment state
+    var currentAssessment by remember { mutableStateOf(CognitiveHistoryManager.getLatestAssessment(context)) }
 
     var isAlarmPopping by remember { mutableStateOf(GameReminderManager.isAlarmFiring(context)) }
 
@@ -379,7 +380,10 @@ fun SpringboardScreen(
                 SpringboardDestination.Exercises -> {
                     BrainExerciseGamePanel(
                         selectedLanguageCode = selectedLanguageCode,
-                        onAssessmentUpdated = { updated -> currentAssessment = updated },
+                        onAssessmentUpdated = { updated ->
+                            currentAssessment = updated
+                            CognitiveHistoryManager.saveAssessment(context, updated)
+                        },
                         onBack = { activeDestination = SpringboardDestination.Home }
                     )
                 }

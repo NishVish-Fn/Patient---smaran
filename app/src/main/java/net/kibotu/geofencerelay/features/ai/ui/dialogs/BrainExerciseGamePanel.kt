@@ -20,7 +20,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.kibotu.geofencerelay.features.ai.engine.CpsEngine
+import net.kibotu.geofencerelay.features.ai.history.CognitiveHistoryManager
+import net.kibotu.geofencerelay.features.ai.history.DailyScorecardItem
 import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.model.CpsAssessmentResult
 import net.kibotu.geofencerelay.features.ai.model.GameSessionTelemetry
@@ -39,8 +40,10 @@ import net.kibotu.geofencerelay.features.ai.service.SmaranAiClient
 import net.kibotu.geofencerelay.features.ai.service.SmaranAiSessionAnalysisResponse
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
 import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
 import net.kibotu.geofencerelay.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.roundToInt
 
 enum class ActiveGameMode {
@@ -76,11 +79,8 @@ data class GameSessionMetrics(
 )
 
 /**
- * Full-Screen Cognitive Games Hub supporting 4 rich multi-round clinical games:
- * 1. Jumbo Memory Match (Adaptive grid: 4, 8, or 12 cards)
- * 2. Cultural Pattern & Sequence Recall (Adaptive levels & sequences)
- * 3. Color-Word Stroop Challenge (Adaptive 5, 8, or 12 rounds)
- * 4. Ascending Number Trail Making (Adaptive 6, 8, or 12 targets)
+ * Full-Screen Cognitive Games Hub supporting 4 rich clinical games.
+ * Difficulty is autonomously selected and adapted by the AI ML engine.
  */
 @Composable
 fun BrainExerciseGamePanel(
@@ -231,10 +231,10 @@ private fun GameHubSelectionView(
                                     .background(GoogleColors.Green.copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text("AI Active", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoogleColors.Green)
+                                Text("AI Autonomous Selection", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoogleColors.Green)
                             }
                         }
-                        Text("ML Random-Forest Adaptive Difficulty Pipeline", fontSize = 11.sp, color = NerColors.NeutralMedium)
+                        Text("Difficulty automatically tuned by ML Pipeline", fontSize = 11.sp, color = NerColors.NeutralMedium)
                     }
                 }
             }
@@ -441,7 +441,7 @@ private fun GameSelectionCard(
                             .background(color.copy(alpha = 0.15f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text(aiDifficulty, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = color)
+                        Text("AI Level: $aiDifficulty", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = color)
                     }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
@@ -454,15 +454,15 @@ private fun GameSelectionCard(
 }
 
 /**
- * In-Game Live HUD: Timer, Moves / Attempts, Errors & Current Difficulty Pill.
+ * In-Game Live HUD: Timer, Moves / Attempts, Errors & AI-Selected Difficulty Badge.
+ * (Manual selector removed; AI selects the level automatically).
  */
 @Composable
 private fun GameLiveHud(
     elapsedSeconds: Int,
     attempts: Int,
     errors: Int,
-    activeDifficulty: String,
-    onDifficultyChanged: ((String) -> Unit)? = null
+    activeDifficulty: String
 ) {
     val minutes = elapsedSeconds / 60
     val seconds = elapsedSeconds % 60
@@ -508,7 +508,7 @@ private fun GameLiveHud(
                 Text("$errors err", fontWeight = FontWeight.Medium, fontSize = 13.sp, color = if (errors > 0) GoogleColors.Red else NerColors.Charcoal)
             }
 
-            // Difficulty Pill
+            // AI-Selected Difficulty Badge
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -516,47 +516,10 @@ private fun GameLiveHud(
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "AI: $activeDifficulty",
+                    text = "AI Level: $activeDifficulty",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = GoogleColors.Blue
-                )
-            }
-        }
-    }
-}
-
-/**
- * Pre-Game Difficulty Selector Chips: [Auto AI] [Easy] [Medium] [Hard].
- */
-@Composable
-private fun DifficultySelectorRow(
-    selectedDifficulty: String,
-    onSelect: (String) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        listOf("Easy", "Medium", "Hard").forEach { diff ->
-            val isSel = selectedDifficulty.equals(diff, ignoreCase = true)
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(if (isSel) GoogleColors.Blue else NerColors.SurfaceWhite)
-                    .border(1.dp, if (isSel) GoogleColors.Blue else NerColors.NeutralBorder, RoundedCornerShape(10.dp))
-                    .clickable { onSelect(diff) }
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = diff,
-                    fontSize = 12.sp,
-                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSel) Color.White else NerColors.Charcoal
                 )
             }
         }
@@ -625,7 +588,7 @@ private fun ClinicalGameResultCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. Metrics Grid (Duration, Accuracy, Attempts, Errors, Hints, Completion)
+            // 2. Metrics Grid (Duration, Accuracy, Attempts, Errors)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 MetricItem(label = "Duration", value = durationFormatted, icon = Icons.Default.Timer, color = GoogleColors.Blue, modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -669,7 +632,7 @@ private fun ClinicalGameResultCard(
                                 .background(GoogleColors.Blue)
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
-                            Text("Next: $recLevel", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("AI Next: $recLevel", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
@@ -740,7 +703,7 @@ private fun ClinicalGameResultCard(
             ) {
                 Icon(Icons.Default.Replay, contentDescription = null, tint = Color.White)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Play Again (Level: $recLevel)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Play Next Round (AI Level: $recLevel)", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -794,7 +757,8 @@ private fun SubScoreBadge(label: String, value: String, color: Color) {
 }
 
 /**
- * Game 1: Multi-Round Memory Matching Game with HUD and AI difficulty.
+ * Game 1: Multi-Round Memory Matching Game.
+ * Difficulty is autonomously chosen by AI.
  */
 @Composable
 private fun FullScreenMemoryMatchingGameView(
@@ -842,7 +806,6 @@ private fun FullScreenMemoryMatchingGameView(
     var sessionAnalysis by remember { mutableStateOf<SmaranAiSessionAnalysisResponse?>(null) }
     var lastMetrics by remember { mutableStateOf<GameSessionMetrics?>(null) }
 
-    // Live timer
     LaunchedEffect(isGameFinished) {
         while (!isGameFinished) {
             delay(1000)
@@ -898,6 +861,7 @@ private fun FullScreenMemoryMatchingGameView(
                     )
                     val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
                     CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+                    CognitiveHistoryManager.saveAssessment(context, result)
 
                     val metrics = GameSessionMetrics(
                         durationMs = durationMs,
@@ -922,6 +886,27 @@ private fun FullScreenMemoryMatchingGameView(
                             hintsUsed = 0
                         )
                         sessionAnalysis = analysis
+
+                        // Persist to Lifetime Daily Scorecard
+                        val scorecard = DailyScorecardItem(
+                            dateFormatted = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date()),
+                            dayKey = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+                            gameType = "Memory Matching",
+                            difficulty = activeDifficulty,
+                            cpsScore = analysis.cpsScore,
+                            accuracy = accuracy,
+                            durationMs = durationMs,
+                            attempts = totalAttempts,
+                            errors = totalErrors,
+                            memoryRetention = analysis.memoryRetentionIndex,
+                            reactionLatency = analysis.reactionLatencyScore,
+                            executiveFunction = analysis.executiveFunctionIndex,
+                            patientMessage = analysis.patientMessage,
+                            caregiverSummary = analysis.caregiverSummary,
+                            anomalyDetected = analysis.anomalyDetected
+                        )
+                        CognitiveHistoryManager.recordScorecard(context, scorecard)
+
                         isGameFinished = true
                         MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
                     }
@@ -966,8 +951,6 @@ private fun FullScreenMemoryMatchingGameView(
             Spacer(modifier = Modifier.height(6.dp))
 
             if (!isGameFinished) {
-                // Pre-game / in-game live difficulty selector
-                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { resetGame(it) })
                 GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = totalAttempts, errors = totalErrors, activeDifficulty = activeDifficulty)
             }
 
@@ -1066,7 +1049,8 @@ private fun FullScreenMemoryMatchingGameView(
 }
 
 /**
- * Game 2: Multi-Round Cultural Pattern & Sequence Recall with HUD and AI difficulty.
+ * Game 2: Multi-Round Cultural Pattern & Sequence Recall.
+ * Difficulty is autonomously chosen by AI.
  */
 data class PatternPadItem(
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -1176,10 +1160,8 @@ private fun FullScreenPatternSequenceGameView(
             Spacer(modifier = Modifier.height(6.dp))
 
             if (!isFinished) {
-                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { playSequence(it) })
                 GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = totalAttempts, errors = totalErrors, activeDifficulty = activeDifficulty)
 
-                // Step Progress Dots
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
@@ -1264,6 +1246,7 @@ private fun FullScreenPatternSequenceGameView(
                                             )
                                             val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
                                             CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+                                            CognitiveHistoryManager.saveAssessment(context, result)
 
                                             val metrics = GameSessionMetrics(
                                                 durationMs = durationMs,
@@ -1288,6 +1271,27 @@ private fun FullScreenPatternSequenceGameView(
                                                     hintsUsed = 0
                                                 )
                                                 sessionAnalysis = analysis
+
+                                                // Record Daily Scorecard
+                                                val scorecard = DailyScorecardItem(
+                                                    dateFormatted = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date()),
+                                                    dayKey = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+                                                    gameType = "Pattern Sequence",
+                                                    difficulty = activeDifficulty,
+                                                    cpsScore = analysis.cpsScore,
+                                                    accuracy = acc,
+                                                    durationMs = durationMs,
+                                                    attempts = totalAttempts,
+                                                    errors = totalErrors,
+                                                    memoryRetention = analysis.memoryRetentionIndex,
+                                                    reactionLatency = analysis.reactionLatencyScore,
+                                                    executiveFunction = analysis.executiveFunctionIndex,
+                                                    patientMessage = analysis.patientMessage,
+                                                    caregiverSummary = analysis.caregiverSummary,
+                                                    anomalyDetected = analysis.anomalyDetected
+                                                )
+                                                CognitiveHistoryManager.recordScorecard(context, scorecard)
+
                                                 isFinished = true
                                                 MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
                                             }
@@ -1340,7 +1344,8 @@ private fun FullScreenPatternSequenceGameView(
 }
 
 /**
- * Game 3: Color-Word Stroop Challenge with HUD and AI difficulty.
+ * Game 3: Color-Word Stroop Challenge.
+ * Difficulty is autonomously chosen by AI.
  */
 @Composable
 private fun ColorStroopChallengeGameView(
@@ -1417,6 +1422,7 @@ private fun ColorStroopChallengeGameView(
             )
             val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
             CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+            CognitiveHistoryManager.saveAssessment(context, result)
 
             val metrics = GameSessionMetrics(
                 durationMs = durationMs,
@@ -1441,6 +1447,27 @@ private fun ColorStroopChallengeGameView(
                     hintsUsed = 0
                 )
                 sessionAnalysis = analysis
+
+                // Record Daily Scorecard
+                val scorecard = DailyScorecardItem(
+                    dateFormatted = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date()),
+                    dayKey = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+                    gameType = "Stroop Challenge",
+                    difficulty = activeDifficulty,
+                    cpsScore = analysis.cpsScore,
+                    accuracy = accuracy,
+                    durationMs = durationMs,
+                    attempts = totalRounds,
+                    errors = totalErrors,
+                    memoryRetention = analysis.memoryRetentionIndex,
+                    reactionLatency = analysis.reactionLatencyScore,
+                    executiveFunction = analysis.executiveFunctionIndex,
+                    patientMessage = analysis.patientMessage,
+                    caregiverSummary = analysis.caregiverSummary,
+                    anomalyDetected = analysis.anomalyDetected
+                )
+                CognitiveHistoryManager.recordScorecard(context, scorecard)
+
                 isFinished = true
                 MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
             }
@@ -1475,7 +1502,6 @@ private fun ColorStroopChallengeGameView(
             Spacer(modifier = Modifier.height(6.dp))
 
             if (!isFinished) {
-                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { resetStroop(it) })
                 GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = currentRound - 1, errors = totalErrors, activeDifficulty = activeDifficulty)
             }
 
@@ -1490,7 +1516,6 @@ private fun ColorStroopChallengeGameView(
                     onBackToHub = onBack
                 )
             } else {
-                // Word Display Box with intentional ink conflict!
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1525,7 +1550,6 @@ private fun ColorStroopChallengeGameView(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Color Choice Grid
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxWidth(),
@@ -1564,7 +1588,8 @@ private fun ColorStroopChallengeGameView(
 }
 
 /**
- * Game 4: Ascending Number Trail Making with HUD and AI difficulty.
+ * Game 4: Ascending Number Trail Making.
+ * Difficulty is autonomously chosen by AI.
  */
 @Composable
 private fun AscendingTrailMakingGameView(
@@ -1636,7 +1661,6 @@ private fun AscendingTrailMakingGameView(
             Spacer(modifier = Modifier.height(6.dp))
 
             if (!isFinished) {
-                DifficultySelectorRow(selectedDifficulty = activeDifficulty, onSelect = { resetTrail(it) })
                 GameLiveHud(elapsedSeconds = elapsedSeconds, attempts = totalAttempts, errors = totalErrors, activeDifficulty = activeDifficulty)
 
                 Text(
@@ -1697,6 +1721,7 @@ private fun AscendingTrailMakingGameView(
                                             )
                                             val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
                                             CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+                                            CognitiveHistoryManager.saveAssessment(context, result)
 
                                             val metrics = GameSessionMetrics(
                                                 durationMs = durationMs,
@@ -1721,6 +1746,27 @@ private fun AscendingTrailMakingGameView(
                                                     hintsUsed = 0
                                                 )
                                                 sessionAnalysis = analysis
+
+                                                // Record Daily Scorecard
+                                                val scorecard = DailyScorecardItem(
+                                                    dateFormatted = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date()),
+                                                    dayKey = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+                                                    gameType = "Trail Making",
+                                                    difficulty = activeDifficulty,
+                                                    cpsScore = analysis.cpsScore,
+                                                    accuracy = accuracy,
+                                                    durationMs = durationMs,
+                                                    attempts = totalAttempts,
+                                                    errors = totalErrors,
+                                                    memoryRetention = analysis.memoryRetentionIndex,
+                                                    reactionLatency = analysis.reactionLatencyScore,
+                                                    executiveFunction = analysis.executiveFunctionIndex,
+                                                    patientMessage = analysis.patientMessage,
+                                                    caregiverSummary = analysis.caregiverSummary,
+                                                    anomalyDetected = analysis.anomalyDetected
+                                                )
+                                                CognitiveHistoryManager.recordScorecard(context, scorecard)
+
                                                 isFinished = true
                                                 MultilingualManager.speak(analysis.patientMessage, selectedLanguageCode)
                                             }

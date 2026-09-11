@@ -15,22 +15,20 @@ object ClinicalReportGenerator {
 
     fun generateMarkdownReport(
         assessment: CpsAssessmentResult,
-        patientName: String = "Senior Participant",
-        biologicalAge: Int = 74
+        patientName: String = "Senior Participant"
     ): String {
         val dateStr = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val cps = assessment.cpsScore
-        val funcAge = assessment.functionalCognitiveAge
         val sub = assessment.subScores
         val proj30 = assessment.projectedCps30Days
         val proj90 = assessment.projectedCps90Days
         val trajStatus = assessment.trajectoryStatus
 
         return """
-# ðŸ§  SMARAN AI: Executive Cognitive Performance & Clinical Report
+# 🧠 SMARAN AI: Executive Cognitive Performance & Clinical Report
 
 **Generated On:** $dateStr  
-**Patient Name:** $patientName | **Biological Age:** $biologicalAge years | **Functional Cognitive Age:** ${String.format(Locale.US, "%.1f", funcAge)} years  
+**Patient Name:** $patientName  
 **SIH Problem Statement:** SIH26003 (Cognitive Care & Reminiscence Suite)
 
 ---
