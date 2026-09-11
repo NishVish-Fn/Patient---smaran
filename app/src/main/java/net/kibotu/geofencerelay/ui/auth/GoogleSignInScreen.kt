@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.ui.auth
+package net.kibotu.geofencerelay.ui.auth
 
 import android.accounts.AccountManager
 import android.app.Activity
@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -242,25 +243,27 @@ fun GoogleSignInScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(32.dp))
+
                 // App Logo
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(100.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.sweepGradient(
                                 listOf(saffronGold, warmTerracotta, deepEmerald, richIndigo, saffronGold)
                             )
                         )
-                        .padding(2.5.dp),
+                        .padding(3.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .background(Color(0xFF1E1A2C))
-                            .padding(10.dp),
+                            .background(NerColors.SurfaceWhite)
+                            .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
@@ -268,227 +271,50 @@ fun GoogleSignInScreen(
                             contentDescription = "Smaran Logo",
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedCornerShape(16.dp))
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Title with Sanskrit & Regional Heritage Honor
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = MultilingualManager.tr("app_title", selectedLanguageCode),
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
-                        letterSpacing = 0.8.sp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "à¤¸à¥à¤®à¤°à¤£",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = saffronGold.copy(alpha = 0.85f),
-                        letterSpacing = 1.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-
+                // App Name Only
                 Text(
-                    text = MultilingualManager.tr("auth_tagline", selectedLanguageCode),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = saffronGold.copy(alpha = 0.95f),
+                    text = "SMARAN",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = NerColors.Charcoal,
+                    letterSpacing = 1.5.sp
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Exact Tagline Required by User
+                Text(
+                    text = "Guiding minds. Supporting families",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = NerColors.NeutralMedium,
                     textAlign = TextAlign.Center
                 )
 
-                Text(
-                    text = MultilingualManager.tr("auth_features_sub", selectedLanguageCode),
-                    fontSize = 11.sp,
-                    color = Color.White.copy(alpha = 0.65f),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Artistic Regional Heritage & Clinical Sentinel Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    border = CardDefaults.outlinedCardBorder().copy(
-                        brush = Brush.horizontalGradient(
-                            listOf(
-                                saffronGold.copy(alpha = 0.6f),
-                                warmTerracotta.copy(alpha = 0.5f),
-                                richIndigo.copy(alpha = 0.6f)
-                            )
-                        ),
-                        width = 1.2.dp
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text("âœ¦", fontSize = 11.sp, color = saffronGold)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = MultilingualManager.tr("auth_badge", selectedLanguageCode),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Black,
-                                color = saffronGold,
-                                letterSpacing = 1.sp
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("âœ¦", fontSize = 11.sp, color = saffronGold)
-                        }
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = MultilingualManager.tr("auth_badge_desc", selectedLanguageCode),
-                            fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.80f),
-                            textAlign = TextAlign.Center,
-                            lineHeight = 15.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // 4 Regional Feature Chips (2x2 Grid)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(saffronGold.copy(alpha = 0.12f))
-                                    .border(1.dp, saffronGold.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
-                                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = MultilingualManager.tr("auth_chip_roots", selectedLanguageCode),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = saffronGold,
-                                    maxLines = 1
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(richIndigo.copy(alpha = 0.15f))
-                                    .border(1.dp, richIndigo.copy(alpha = 0.40f), RoundedCornerShape(10.dp))
-                                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = MultilingualManager.tr("auth_chip_games", selectedLanguageCode),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF82B1FF),
-                                    maxLines = 1
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(deepEmerald.copy(alpha = 0.12f))
-                                    .border(1.dp, deepEmerald.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
-                                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = MultilingualManager.tr("auth_chip_gps", selectedLanguageCode),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = deepEmerald,
-                                    maxLines = 1
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(warmTerracotta.copy(alpha = 0.12f))
-                                    .border(1.dp, warmTerracotta.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
-                                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = MultilingualManager.tr("auth_chip_home", selectedLanguageCode),
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = warmTerracotta,
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                    }
-                }
+                Spacer(modifier = Modifier.height(28.dp))
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             // Central Sign-In Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                 shape = RoundedCornerShape(22.dp),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.15f),
-                            Color.White.copy(alpha = 0.05f)
-                        )
-                    ),
-                    width = 1.dp
-                )
+                border = BorderStroke(1.dp, NerColors.NeutralBorder)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp),
+                        .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = MultilingualManager.tr("auth_sign_in", selectedLanguageCode),
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
                     // Detected accounts 1-tap select list
                     if (detectedAccounts.isNotEmpty()) {
                         detectedAccounts.take(2).forEach { acc ->
@@ -525,10 +351,10 @@ fun GoogleSignInScreen(
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(acc, fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
-                                    Text(MultilingualManager.tr("auth_1tap", selectedLanguageCode), fontSize = 10.sp, color = deepEmerald, fontWeight = FontWeight.Medium)
+                                    Text(acc, fontSize = 13.sp, color = NerColors.Charcoal, fontWeight = FontWeight.SemiBold)
+                                    Text("1-Tap Sign In", fontSize = 10.sp, color = deepEmerald, fontWeight = FontWeight.Medium)
                                 }
-                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.White.copy(alpha = 0.4f))
+                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = NerColors.NeutralMedium)
                             }
                         }
 
@@ -637,7 +463,7 @@ fun GoogleSignInScreen(
                         Text(
                             text = MultilingualManager.tr("auth_remember_device", selectedLanguageCode),
                             fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.85f),
+                            color = NerColors.Charcoal,
                             fontWeight = FontWeight.Medium
                         )
                     }

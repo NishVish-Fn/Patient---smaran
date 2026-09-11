@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.ui.theme
+package net.kibotu.geofencerelay.ui.theme
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -66,16 +66,16 @@ object NerColors {
     val TertiaryTint = Color(0xFFE3F2FD)
     val TertiarySoft = Color(0xFFBBDEFB)
 
-    // Neutrals & Surfaces
-    val Charcoal = Color(0xFF212121)
+    // Neutrals & Surfaces (Dark-Whitish Aesthetic)
+    val Charcoal = Color(0xFF1E1E1E)
     val NeutralDark = Color(0xFF121212)
-    val NeutralMedium = Color(0xFF616161)
-    val NeutralLight = Color(0xFF9E9E9E)
-    val NeutralSoft = Color(0xFFEAE6DF)
-    val NeutralBorder = Color(0xFFE5E0D6)
-    val CanvasWarm = Color(0xFFF7F5F0)
-    val CanvasIvory = Color(0xFFFAF8F5)
-    val SurfaceWhite = Color(0xFFFFFFFF)
+    val NeutralMedium = Color(0xFF5A5A5A)
+    val NeutralLight = Color(0xFF8E8E8E)
+    val NeutralSoft = Color(0xFFDEDBD3)
+    val NeutralBorder = Color(0xFFD2CEC4)
+    val CanvasWarm = Color(0xFFECEAE5)      // Dark-whitish alabaster canvas
+    val CanvasIvory = Color(0xFFF1EFEA)     // Elevated dark-white
+    val SurfaceWhite = Color(0xFFF7F6F2)    // Refined dark-whitish card surface
 
     // Vibrant Cultural Accents
     val Crimson = Color(0xFFC62828)

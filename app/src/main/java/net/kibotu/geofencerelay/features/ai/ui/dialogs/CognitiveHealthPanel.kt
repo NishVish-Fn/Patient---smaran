@@ -17,12 +17,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.model.CpsAssessmentResult
+import net.kibotu.geofencerelay.features.ai.report.ClinicalReportGenerator
+import net.kibotu.geofencerelay.features.ai.risk.CognitiveAnomalyDetector
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
 import net.kibotu.geofencerelay.ui.theme.*
 
@@ -40,6 +44,21 @@ fun CognitiveHealthPanel(
     onLaunchGame: () -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val baselineHistory = remember { CognitiveAnomalyDetector.getSessionHistory(context) }
+    val latestSession = baselineHistory.lastOrNull()
+    val anomalyReport = remember(latestSession) {
+        if (latestSession != null && baselineHistory.size > 1) {
+            CognitiveAnomalyDetector.detectAnomalies(
+                latestSession.accuracy,
+                latestSession.responseTimeMs,
+                latestSession.errors,
+                baselineHistory.dropLast(1)
+            )
+        } else {
+            null
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,6 +99,46 @@ fun CognitiveHealthPanel(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            if (anomalyReport != null && anomalyReport.anomalyDetected) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.CrimsonTint),
+                    border = BorderStroke(1.2.dp, NerColors.Crimson)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = NerColors.Crimson,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Acute Performance Drop Alert (${anomalyReport.riskLevel})",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = NerColors.Crimson
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            anomalyReport.alerts.forEach { alert ->
+                                Text(
+                                    text = "• ${alert.message}",
+                                    fontSize = 12.sp,
+                                    color = NerColors.Charcoal
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             if (assessment == null) {
                 // Unassessed State Card (Warm 24dp Card)
@@ -304,6 +363,20 @@ fun CognitiveHealthPanel(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Share Clinical Diagnostic Report Pill Button
+                NerPillButton(
+                    text = "Share Clinical Diagnostic Report",
+                    onClick = {
+                        val reportMd = ClinicalReportGenerator.generateMarkdownReport(assessment)
+                        ClinicalReportGenerator.shareClinicalReport(context, reportMd, "Senior Participant")
+                    },
+                    containerColor = NerColors.Tertiary,
+                    icon = Icons.Default.Share,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
             }

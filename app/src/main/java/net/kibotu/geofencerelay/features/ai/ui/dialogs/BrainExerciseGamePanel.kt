@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
+package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -34,6 +34,8 @@ import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.model.CpsAssessmentResult
 import net.kibotu.geofencerelay.features.ai.model.GameSessionTelemetry
 import net.kibotu.geofencerelay.features.ai.reminder.GameReminderManager
+import net.kibotu.geofencerelay.features.ai.risk.CognitiveAnomalyDetector
+import net.kibotu.geofencerelay.features.ai.service.SmaranAiClient
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
 import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
 import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
@@ -383,6 +385,8 @@ private fun FullScreenMemoryMatchingGameView(
     onAssessmentUpdated: (CpsAssessmentResult) -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val symbolsPool = remember {
         listOf(
             MatchSymbol(1, Icons.Default.Favorite, GoogleColors.Red, "Heart"),
@@ -468,6 +472,19 @@ private fun FullScreenMemoryMatchingGameView(
                         )
                         val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
                         completionMessage = result.encouragementPrompt
+                        CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+                        scope.launch {
+                            SmaranAiClient.predictDifficulty(
+                                context = context,
+                                gameType = telemetry.gameType,
+                                currentDifficulty = result.hiddenDifficulty,
+                                accuracy = telemetry.accuracy,
+                                completionRate = telemetry.completionRate,
+                                responseTimeMs = telemetry.responseTimeMs,
+                                errors = telemetry.errors,
+                                hintsUsed = telemetry.hintsUsed
+                            )
+                        }
                         onAssessmentUpdated(result)
                         isGameFinished = true
                         flippedIndices = emptyList()
@@ -638,6 +655,7 @@ private fun FullScreenPatternSequenceGameView(
     var currentLevel by remember { mutableStateOf(1) }
     val maxLevels = 3
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     // Level 1: 3 steps; Level 2: 4 steps; Level 3: 5 steps
     fun generateSequence(level: Int): List<Int> {
@@ -803,6 +821,19 @@ private fun FullScreenPatternSequenceGameView(
                                                 )
                                                 val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
                                                 completionMessage = result.encouragementPrompt
+                                                CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+                                                coroutineScope.launch {
+                                                    SmaranAiClient.predictDifficulty(
+                                                        context = context,
+                                                        gameType = telemetry.gameType,
+                                                        currentDifficulty = result.hiddenDifficulty,
+                                                        accuracy = telemetry.accuracy,
+                                                        completionRate = telemetry.completionRate,
+                                                        responseTimeMs = telemetry.responseTimeMs,
+                                                        errors = telemetry.errors,
+                                                        hintsUsed = telemetry.hintsUsed
+                                                    )
+                                                }
                                                 onAssessmentUpdated(result)
                                                 isFinished = true
                                                 MultilingualManager.speak(result.encouragementPrompt, selectedLanguageCode)
@@ -863,6 +894,8 @@ private fun ColorStroopChallengeGameView(
     onAssessmentUpdated: (CpsAssessmentResult) -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val colorOptions = listOf(
         Triple("BLUE", "Blue / नीला", GoogleColors.Blue),
         Triple("RED", "Red / लाल", GoogleColors.Red),
@@ -893,6 +926,19 @@ private fun ColorStroopChallengeGameView(
             )
             val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
             completionMessage = result.encouragementPrompt
+            CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+            coroutineScope.launch {
+                SmaranAiClient.predictDifficulty(
+                    context = context,
+                    gameType = telemetry.gameType,
+                    currentDifficulty = result.hiddenDifficulty,
+                    accuracy = telemetry.accuracy,
+                    completionRate = telemetry.completionRate,
+                    responseTimeMs = telemetry.responseTimeMs,
+                    errors = telemetry.errors,
+                    hintsUsed = telemetry.hintsUsed
+                )
+            }
             onAssessmentUpdated(result)
             isFinished = true
             MultilingualManager.speak(result.encouragementPrompt, selectedLanguageCode)
@@ -1022,6 +1068,8 @@ private fun AscendingTrailMakingGameView(
     onAssessmentUpdated: (CpsAssessmentResult) -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var currentRound by remember { mutableStateOf(1) }
     val maxRound = 2
     val targetMax = if (currentRound == 1) 8 else 10
@@ -1127,6 +1175,19 @@ private fun AscendingTrailMakingGameView(
                                                 )
                                                 val result = CpsEngine.analyzeSession(telemetry, selectedLanguageCode)
                                                 completionMessage = result.encouragementPrompt
+                                                CognitiveAnomalyDetector.recordSessionToHistory(context, telemetry.accuracy, telemetry.responseTimeMs, telemetry.errors)
+                                                coroutineScope.launch {
+                                                    SmaranAiClient.predictDifficulty(
+                                                        context = context,
+                                                        gameType = telemetry.gameType,
+                                                        currentDifficulty = result.hiddenDifficulty,
+                                                        accuracy = telemetry.accuracy,
+                                                        completionRate = telemetry.completionRate,
+                                                        responseTimeMs = telemetry.responseTimeMs,
+                                                        errors = telemetry.errors,
+                                                        hintsUsed = telemetry.hintsUsed
+                                                    )
+                                                }
                                                 onAssessmentUpdated(result)
                                                 isFinished = true
                                                 MultilingualManager.speak(result.encouragementPrompt, selectedLanguageCode)
