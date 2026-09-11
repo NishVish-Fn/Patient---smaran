@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
+package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -223,18 +223,58 @@ private fun GameHubSelectionView(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("CPS: ${latestCps.roundToInt()} / 100", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = NerColors.Charcoal)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(GoogleColors.Green.copy(alpha = 0.15f))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text("AI Autonomous Selection", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = GoogleColors.Green)
+                            if (latestCps != null) {
+                                Text(
+                                    "CPS: ${latestCps.roundToInt()} / 100",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = NerColors.Charcoal
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(GoogleColors.Green.copy(alpha = 0.15f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        "AI Active",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = GoogleColors.Green
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    "CPS: -- / 100",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = NerColors.Charcoal
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(NerColors.NeutralSoft)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        "Untested",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = NerColors.NeutralMedium
+                                    )
+                                }
                             }
                         }
-                        Text("Difficulty automatically tuned by ML Pipeline", fontSize = 11.sp, color = NerColors.NeutralMedium)
+                        Text(
+                            text = if (latestCps != null)
+                                "Difficulty automatically tuned by ML Pipeline"
+                            else
+                                "Play your first game to compute initial CPS baseline",
+                            fontSize = 11.sp,
+                            color = NerColors.NeutralMedium
+                        )
                     }
                 }
             }

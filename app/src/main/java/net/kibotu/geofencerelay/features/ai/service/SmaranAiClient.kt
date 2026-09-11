@@ -1,4 +1,4 @@
-﻿package net.kibotu.geofencerelay.features.ai.service
+package net.kibotu.geofencerelay.features.ai.service
 
 import android.content.Context
 import android.util.Log
@@ -70,9 +70,10 @@ object SmaranAiClient {
         prefs.edit().putString("rec_diff_$gameType", difficulty.capitalizeFirst()).apply()
     }
 
-    fun getLatestCpsScore(context: Context): Double {
+    fun getLatestCpsScore(context: Context): Double? {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getFloat("latest_cps_score", 75.0f).toDouble()
+        if (!prefs.contains("latest_cps_score")) return null
+        return prefs.getFloat("latest_cps_score", 0f).toDouble()
     }
 
     fun saveLatestCpsScore(context: Context, cps: Double) {
