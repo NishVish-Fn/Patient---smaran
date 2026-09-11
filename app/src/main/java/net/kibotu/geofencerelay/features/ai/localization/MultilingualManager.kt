@@ -25,6 +25,669 @@ object MultilingualManager {
 
     // Full UI String Translations Dictionary
     private val stringRepository = mapOf(
+
+        // Authentication & Login Screen
+        "auth_tagline" to mapOf(
+            "en" to "Dementia Care & Regional Heritage Companion",
+            "hi" to "डिमेंशिया देखभाल और क्षेत्रीय विरासत साथी",
+            "as" to "ডিমেনচিয়া যত্ন আৰু আঞ্চলিক ঐতিহ্যৰ সংগী",
+            "lus" to "Hriatna Hloh Enkawlna & Hnam Rohlu",
+            "kha" to "Ka Jingiarap Jingkynmaw & Ka Riti Tynrai",
+            "mni" to "লৈখিদ্রবা ৱাখল্লোন য়েংশিনবা অমসুং চৎনবী সংগী",
+            "nag" to "Dementia Care & Hami Khan laga Heritage Sathi"
+        ),
+        "auth_features_sub" to mapOf(
+            "en" to "AI Neuro-Telemetry • Cultural Reminiscence • Safe GPS Radar",
+            "hi" to "एआई न्यूरो-टेलीमेट्री • सांस्कृतिक स्मृति • सुरक्षित जीपीएस रडार",
+            "as" to "এআই নিউৰো-টেলিমেট্ৰি • সাংস্কৃতিক স্মৃতি • সুৰক্ষিত জিপিএছ ৰাডাৰ",
+            "lus" to "AI Rilru Tehna • Hnam Hriatrengna • Himna GPS Radar",
+            "kha" to "AI Jingmut Telemetry • Jingkynmaw Riti • Shngiam GPS Radar",
+            "mni" to "AI ন্যুৰো-তেলিমেট্রি • চৎনবী নীংশিংবা • সেফ GPS ৰাদাৰ",
+            "nag" to "AI Neuro Telemetry • Cultural Yaad • Safe GPS Radar"
+        ),
+        "auth_badge" to mapOf(
+            "en" to "REGIONAL HERITAGE & COGNITIVE SENTINEL",
+            "hi" to "क्षेत्रीय विरासत एवं संज्ञानात्मक प्रहरी",
+            "as" to "আঞ্চলিক ঐতিহ্য আৰু বোধশক্তিৰ প্ৰহৰী",
+            "lus" to "HNAM ROHLU & RILRU VENHIMTU",
+            "kha" to "KA RITI TYNRAI & KA JINGAP JINGMUT",
+            "mni" to "চৎনবী হেরিতেজ অমসুং ৱাখল্লোন ঙাকপীবী",
+            "nag" to "HERITAGE & COGNITIVE SENTINEL"
+        ),
+        "auth_badge_desc" to mapOf(
+            "en" to "Rooted in rich regional traditions and clinical neuroscience. Preserving cherished memories, family connections, and 24/7 patient boundary safety.",
+            "hi" to "समृद्ध क्षेत्रीय परंपराओं और क्लिनिकल न्यूरोसाइंस पर आधारित। संजोई हुई यादों, पारिवारिक संबंधों और २४/७ सुरक्षा का संरक्षण।",
+            "as" to "সমৃদ্ধ আঞ্চলিক পৰম্পৰা আৰু ক্লিনিকেল নিউৰোবিজ্ঞানত শিপোৱা। সোঁৱৰণি, পাৰিবাৰিক সম্পৰ্ক আৰু ২৪/৭ নিৰাপত্তাৰ সংৰক্ষণ।",
+            "lus" to "Hnam zia leh thluak thiamna hmanga siam. Hriatrengna hlu, chhungkua leh himna 24/7 a venhimna.",
+            "kha" to "Buh ha ka riti tynrai bad ka neuroscience. Ri ia ki jingkynmaw kordor, ka jingialong kawei bad ka jingshngiam 24/7.",
+            "mni" to "লৈবাক্কী চৎনবী অমসুং ক্লিনিকেল ন্যুরোসাইন্সতা য়ুম্ফম ওইবা। নীংশিংবা, ইমুংগী মরী অমসুং ২৪/৭ সেফটি ঙাকপা।",
+            "nag" to "Apun laga tradition aru clinical neuroscience logote bonaishe. Sob bhal yaad, poribar aru 24/7 patient safety rakhibo."
+        ),
+        "auth_chip_roots" to mapOf(
+            "en" to "🌸 Regional Roots",
+            "hi" to "🌸 क्षेत्रीय जड़ें",
+            "as" to "🌸 আঞ্চলিক শিপা",
+            "lus" to "🌸 Hnam Bulthut",
+            "kha" to "🌸 Ki Tynrai Riti",
+            "mni" to "🌸 চৎনবীগী মরম",
+            "nag" to "🌸 Nijor Roots"
+        ),
+        "auth_chip_games" to mapOf(
+            "en" to "🧠 Neuro-Games",
+            "hi" to "🧠 न्यूरो-खेल",
+            "as" to "🧠 নিউৰো-খেল",
+            "lus" to "🧠 Thluak Infiamna",
+            "kha" to "🧠 Ki Jingialehkai Jingmut",
+            "mni" to "🧠 ন্যুরো-শান্নবা",
+            "nag" to "🧠 Dimag laga Khel"
+        ),
+        "auth_chip_gps" to mapOf(
+            "en" to "🛡️ GPS Sentinel",
+            "hi" to "🛡️ जीपीएस प्रहरी",
+            "as" to "🛡️ জিপিএছ প্ৰহৰী",
+            "lus" to "🛡️ GPS Venhimtu",
+            "kha" to "🛡️ Ka Jingiada GPS",
+            "mni" to "🛡️ GPS ঙাকপীবী",
+            "nag" to "🛡️ GPS Sentinel"
+        ),
+        "auth_chip_home" to mapOf(
+            "en" to "🏡 Take Me Home",
+            "hi" to "🏡 मुझे घर ले चलो",
+            "as" to "🏡 মোক ঘৰলৈ লৈ ব'লক",
+            "lus" to "🏡 In Lam Pan",
+            "kha" to "🏡 Leit Sha Ing",
+            "mni" to "🏡 য়ুমদা পুখিনবিয়ু",
+            "nag" to "🏡 Ghor te Loi Jabi"
+        ),
+        "auth_sign_in" to mapOf(
+            "en" to "Sign In",
+            "hi" to "साइन इन करें",
+            "as" to "ছাইন ইন কৰক",
+            "lus" to "Lut Rawh",
+            "kha" to "Rung Mynta",
+            "mni" to "সাইন্ ইন তৌবিয়ু",
+            "nag" to "Sign In Kuribi"
+        ),
+        "auth_1tap" to mapOf(
+            "en" to "1-Tap Sign In",
+            "hi" to "१-टैप साइन इन",
+            "as" to "১-টিপ ছাইন ইন",
+            "lus" to "Hmet Vawikhat Lut",
+            "kha" to "Rung Shi Kyntuit",
+            "mni" to "১-নম্বা সাইন্ ইন",
+            "nag" to "1-Tap Sign In"
+        ),
+        "auth_continue_google" to mapOf(
+            "en" to "Continue with Google",
+            "hi" to "Google के साथ जारी रखें",
+            "as" to "Google ৰ সৈতে আগবাঢ়ক",
+            "lus" to "Google hmanga chhunzawm",
+            "kha" to "Iaibteng bad Google",
+            "mni" to "Google গা লোয়ননা চৎখিবিয়ু",
+            "nag" to "Google logote Continue Kuribi"
+        ),
+        "auth_choose_another" to mapOf(
+            "en" to "Choose Another Account",
+            "hi" to "दूसरा खाता चुनें",
+            "as" to "অন্য একাউণ্ট বাছক",
+            "lus" to "Account Dang Thlang Rawh",
+            "kha" to "Jied da ka Account Kawei",
+            "mni" to "অতোপ্পা একাউন্ট খনবিয়ু",
+            "nag" to "Aro Ekta Account Chunu"
+        ),
+        "auth_remember_device" to mapOf(
+            "en" to "Remember this Device (Stay Signed In)",
+            "hi" to "इस डिवाइस को याद रखें (लॉग इन रहें)",
+            "as" to "এই ডিভাইচটো মনত ৰাখক (লগ ইন হৈ থাকক)",
+            "lus" to "He Khawl hi Hre reng rawh (Lut reng rawh)",
+            "kha" to "Kynmaw ia kane ka Device (Rung beit)",
+            "mni" to "মসিগী দিভাইস নীংশিংবিয়ু (লগ ইন লৈহন্নবা)",
+            "nag" to "Etu Device Yaad Rakhibi (Always Login)"
+        ),
+        "auth_quick_access" to mapOf(
+            "en" to "⚡ Quick Device Access (Continue as This Device)",
+            "hi" to "⚡ त्वरित डिवाइस प्रवेश (इस डिवाइस के रूप में जारी रखें)",
+            "as" to "⚡ দ্ৰুত ডিভাইচ প্ৰৱেশ (এই ডিভাইচ হিচাপে আগবাঢ়ক)",
+            "lus" to "⚡ Khawl Hman Zung Zungna",
+            "kha" to "⚡ Ka Jingrung Kloi",
+            "mni" to "⚡ য়াংনা দিভাইস চংবা",
+            "nag" to "⚡ Jaldi Device Access"
+        ),
+        "auth_signing_in" to mapOf(
+            "en" to "Signing In...",
+            "hi" to "साइन इन हो रहा है...",
+            "as" to "ছাইন ইন হৈ আছে...",
+            "lus" to "Lut mek...",
+            "kha" to "Dang rung...",
+            "mni" to "সাইন্ ইন তৌরি...",
+            "nag" to "Sign In Hoi Ase..."
+        ),
+
+        // Memory Vault Sub-Panel Strings
+        "mv_next_memory" to mapOf(
+            "en" to "Next Cherished Memory",
+            "hi" to "अगली अनमोल स्मृति",
+            "as" to "পৰৱৰ্তী মৰমৰ স্মৃতি",
+            "lus" to "Hriatrengna Dang Hmeh",
+            "kha" to "Ka Jingkynmaw Kordor Bud",
+            "mni" to "মথংগী নীংশিংবা",
+            "nag" to "Dusra Bhal Yaad"
+        ),
+        "mv_default_themes" to mapOf(
+            "en" to "Choose from 6 Default Themes:",
+            "hi" to "६ पूर्वनिर्धारित थीमों में से चुनें:",
+            "as" to "৬টা অবিকল্পিত বিষয়ৰ পৰা বাছক:",
+            "lus" to "Thupui 6 Aṭangin Thlang Rawh:",
+            "kha" to "Jied na ki 6 tylli ki Theme:",
+            "mni" to "থিম ৬ তগী খনবিয়ু:",
+            "nag" to "6 ta Theme para Chunu:"
+        ),
+        "mv_add_first" to mapOf(
+            "en" to "Add First Family Memory",
+            "hi" to "पहली पारिवारिक स्मृति जोड़ें",
+            "as" to "প্ৰথম পাৰিবাৰিক স্মৃতি যোগ কৰক",
+            "lus" to "Chhungkaw Hriatrengna Hmasa Dah Rawh",
+            "kha" to "Buh ia ka Jingkynmaw Kynhun Nyngkong",
+            "mni" to "অহানবা ইমুংগী নীংশিংবা হাপচিনবিয়ু",
+            "nag" to "Pehla Family Yaad Dalibi"
+        ),
+        "mv_upload_title" to mapOf(
+            "en" to "Upload Family Memory Question",
+            "hi" to "पारिवारिक स्मृति प्रश्न जोड़ें",
+            "as" to "পাৰিবাৰিক স্মৃতি প্ৰশ্ন আপলোড কৰক",
+            "lus" to "Chhungkaw Zawhna Dahna",
+            "kha" to "Buh Jingkylli Jingkynmaw",
+            "mni" to "ইমুংগী নীংশিংবা ৱাহং হাপচিনবিয়ু",
+            "nag" to "Family Yaad Sawaal Dalibi"
+        ),
+        "mv_select_theme" to mapOf(
+            "en" to "Select Default Theme:",
+            "hi" to "थीम का चयन करें:",
+            "as" to "বিষয় বাছক:",
+            "lus" to "Thupui Thlang Rawh:",
+            "kha" to "Jied ia ka Theme:",
+            "mni" to "থিম খনবিয়ু:",
+            "nag" to "Theme Chunu:"
+        ),
+        "mv_title_label" to mapOf(
+            "en" to "Memory Title",
+            "hi" to "स्मृति शीर्षक",
+            "as" to "স্মৃতিৰ শিৰোনাম",
+            "lus" to "Hriatrengna Hming",
+            "kha" to "Kyrteng Jingkynmaw",
+            "mni" to "নীংশিংবগী মমিং",
+            "nag" to "Yaad laga Naam"
+        ),
+        "mv_title_hint" to mapOf(
+            "en" to "e.g. Grandma's Favorite Dish",
+            "hi" to "उदा. दादी का पसंदीदा व्यंजन",
+            "as" to "উদাহৰণ: আইতাৰ প্ৰিয় খাদ্য",
+            "lus" to "Entirnan: Pi chawhmeh duh ber",
+            "kha" to "Nuksa: Ka jingbam ba bang ka Mei-rad",
+            "mni" to "খুদম: ইবেম্মাগী নুংসিবা চিঞ্জাক",
+            "nag" to "Dadi laga Bhal Khana"
+        ),
+        "mv_question_label" to mapOf(
+            "en" to "Memory Question",
+            "hi" to "स्मृति प्रश्न",
+            "as" to "স্মৃতিৰ প্ৰশ্ন",
+            "lus" to "Hriatrengna Zawhna",
+            "kha" to "Jingkylli Jingkynmaw",
+            "mni" to "নীংশিংবা ৱাহং",
+            "nag" to "Yaad laga Sawaal"
+        ),
+        "mv_question_hint" to mapOf(
+            "en" to "e.g. Which spice does Grandma add to tea?",
+            "hi" to "उदा. दादी चाय में कौन सा मसाला डालती हैं?",
+            "as" to "উদাহৰণ: আইতাই চাহাত কি মছলা দিয়ে?",
+            "lus" to "Entirnan: Pi-in thingpuia a telh ṭhin?",
+            "kha" to "Nuksa: Kaei ba ka Mei-rad ka thep ha ka sha?",
+            "mni" to "খুদম: ইবেম্মান চা দা করি মশলা হাপই?",
+            "nag" to "Dadi cha te ki masala dale?"
+        ),
+        "mv_cue_label" to mapOf(
+            "en" to "Helpful Hint / Cue",
+            "hi" to "मददगार संकेत / हिंट",
+            "as" to "সহায়কাৰী ইঙ্গিত",
+            "lus" to "Puihna / Hriattirna",
+            "kha" to "Jingsneng Yarap",
+            "mni" to "মতেং পাংবা ইন্ত",
+            "nag" to "Modot laga Hint"
+        ),
+        "mv_cue_hint" to mapOf(
+            "en" to "e.g. Fresh green leaves from garden",
+            "hi" to "उदा. बगीचे से ताज़ी हरी पत्तियां",
+            "as" to "উদাহৰণ: বাৰীৰ সতেজ সেউজীয়া পাত",
+            "lus" to "Entirnan: Hwanna hnah hring thar",
+            "kha" to "Nuksa: Ki sla ba jyrngam na kper",
+            "mni" to "খুদম: লৈকোলদগী অহিংবা মনা",
+            "nag" to "Bagan laga taza patta"
+        ),
+        "mv_options_title" to mapOf(
+            "en" to "Multiple Choice Options (Select correct answer):",
+            "hi" to "विकल्प चुनें (सही उत्तर पर टैप करें):",
+            "as" to "বিকল্প বাছক (শুদ্ধ উত্তৰত টিপক):",
+            "lus" to "Thlan turte (A dik ber hmet rawh):",
+            "kha" to "Ki jingjied (Kyntuit ia kaba dei):",
+            "mni" to "অপশনশিং (চুম্বা পাউখুম খনবিয়ু):",
+            "nag" to "Options (Sahi uttar select kuribi):"
+        ),
+        "mv_save" to mapOf(
+            "en" to "Save to Vault",
+            "hi" to "वॉल्ट में सुरक्षित करें",
+            "as" to "ভঁৰালত সংৰক্ষণ কৰক",
+            "lus" to "Dah Ṭha Rawh",
+            "kha" to "Kynshew ha ka Vault",
+            "mni" to "ভোল্টতা সেভ তৌবিয়ু",
+            "nag" to "Vault te Save Kuribi"
+        ),
+        "mv_cancel" to mapOf(
+            "en" to "Cancel",
+            "hi" to "रद्द करें",
+            "as" to "বাতিল কৰক",
+            "lus" to "Sut Leh",
+            "kha" to "Pynsangeh",
+            "mni" to "লেপহন্বিয়ু",
+            "nag" to "Cancel"
+        ),
+
+        // Safety Alerts Sub-Panel Strings
+        "safety_sos" to mapOf(
+            "en" to "EMERGENCY SOS",
+            "hi" to "आपातकालीन एसओएस (SOS)",
+            "as" to "জৰুৰীকালীন এছ.অ'.এছ (SOS)",
+            "lus" to "CHHIATRUP SOS",
+            "kha" to "JINGKYRDUH SOS",
+            "mni" to "ইমর্জেন্সী SOS",
+            "nag" to "EMERGENCY SOS"
+        ),
+        "safety_geofence_title" to mapOf(
+            "en" to "Safe Zone Boundary",
+            "hi" to "सुरक्षित क्षेत्र सीमा",
+            "as" to "সুৰক্ষিত মণ্ডলৰ সীমা",
+            "lus" to "Hmun Him Ramri",
+            "kha" to "U Pud Ka Jingshngiam",
+            "mni" to "সেফ জোন ঙমখৈ",
+            "nag" to "Safe Zone Boundary"
+        ),
+        "safety_geofence_sub" to mapOf(
+            "en" to "Active 500m Home Geofence",
+            "hi" to "सक्रिय ५०० मीटर गृह जियोफेंस",
+            "as" to "সক্ৰিয় ৫০০ মিটাৰ ঘৰৰ জিপিএছ সীমা",
+            "lus" to "In chhehvel 500m Himna",
+            "kha" to "500m Sawdong Ing ba Trei Kam",
+            "mni" to "৫০০ মিটর য়ুমগী সেফ জোন এক্টিভ",
+            "nag" to "500m Ghor Safe Zone Chalu Ase"
+        ),
+        "safety_geofence_desc" to mapOf(
+            "en" to "Your GPS location is being continuously monitored by your family guardian. If you step outside your designated boundary, your family is alerted immediately.",
+            "hi" to "आपके परिवार द्वारा आपके जीपीएस स्थान की निरंतर निगरानी की जा रही है। यदि आप अपनी सीमा से बाहर जाते हैं, तो परिवार को तुरंत सूचित किया जाता है।",
+            "as" to "আপোনাৰ জিপিএছ অৱস্থান পৰিয়ালে নিৰন্তৰ নিৰীক্ষণ কৰি আছে। নিৰ্ধাৰিত সীমাৰ বাহিৰলৈ গ'লে পৰিয়ালক তৎক্ষণাত সতৰ্ক কৰা হ'ব।",
+            "lus" to "I GPS awmna chu i chhungten an thlithlai reng a ni. I ramri pawn i chhuah chuan i chhungte hriattir nghal an ni ang.",
+            "kha" to "Ka jaka GPS jong phi la peitngor da ka kynhun iing. Lada phi mih shabar, kin ioh jingtip mar-ia-mar.",
+            "mni" to "অদোমগী GPS মফম ইমুংনা লেপ্তনা য়েংশিল্লি। ঙমখৈগী মপান থোক্লবদি ইমুংদা তৎক্ষণাৎ খঙহনগনি।",
+            "nag" to "Apun laga GPS location poribar manu saikina ase. Boundary bahar jale poribar manu logote turant alert jabo."
+        ),
+        "safety_med_id" to mapOf(
+            "en" to "Emergency Medical ID",
+            "hi" to "आपातकालीन मेडिकल पहचान",
+            "as" to "জৰুৰীকালীন চিকিৎসা পৰিচয়",
+            "lus" to "Chhiatrup Damdawi ID",
+            "kha" to "Ka Medical ID Jingkyrduh",
+            "mni" to "ইমর্জেন্সী মেদিকেল ID",
+            "nag" to "Emergency Medical ID"
+        ),
+        "safety_patient_name" to mapOf(
+            "en" to "Patient Name:",
+            "hi" to "मरीज़ का नाम:",
+            "as" to "ৰোগীৰ নাম:",
+            "lus" to "Damin Hming:",
+            "kha" to "Kyrteng Nongpang:",
+            "mni" to "অনাবাগী মমিং:",
+            "nag" to "Patient laga Naam:"
+        ),
+        "safety_condition" to mapOf(
+            "en" to "Condition:",
+            "hi" to "चिकित्सीय स्थिति:",
+            "as" to "শাৰীৰিক অৱস্থা:",
+            "lus" to "Natna Dinhmun:",
+            "kha" to "Ka Jinglong:",
+            "mni" to "লাইনাগী ফীভম:",
+            "nag" to "Condition:"
+        ),
+        "safety_condition_desc" to mapOf(
+            "en" to "Memory & Alzheimer's Care Assistance",
+            "hi" to "स्मृति एवं अल्जाइमर देखभाल सहायता",
+            "as" to "স্মৃতি আৰু এলঝাইমাৰ যত্ন সাহাৰ্য",
+            "lus" to "Hriatna Hloh Enkawlna",
+            "kha" to "Jingiarap Jingkynmaw & Alzheimer's",
+            "mni" to "নীংশিংবা অমসুং আলঝাইমার য়েংশিনবা",
+            "nag" to "Memory & Alzheimer Care Modot"
+        ),
+        "safety_caregiver" to mapOf(
+            "en" to "Caregiver:",
+            "hi" to "देखभालकर्ता:",
+            "as" to "শুশ্ৰূষাকাৰী:",
+            "lus" to "Enkawltu:",
+            "kha" to "Nongsumar:",
+            "mni" to "য়েংশিনবীবী:",
+            "nag" to "Caregiver:"
+        ),
+        "safety_address" to mapOf(
+            "en" to "Home Address:",
+            "hi" to "घर का पता:",
+            "as" to "ঘৰৰ ঠিকনা:",
+            "lus" to "In Awmna:",
+            "kha" to "Ka Jaka Ing:",
+            "mni" to "য়ুমগী লৈফম:",
+            "nag" to "Ghor laga Address:"
+        ),
+        "safety_wellness" to mapOf(
+            "en" to "Daily Wellness Checklist",
+            "hi" to "दैनिक स्वास्थ्य चेकलिस्ट",
+            "as" to "দৈনন্দিন স্বাস্থ্য তালিকা",
+            "lus" to "Ni Tin Hriselna Enna",
+            "kha" to "Ka Jingpeit Ka Koit Ka Khiah Minta Ka Sngi",
+            "mni" to "নোংমগী হকশেল চেক্লিষ্ট",
+            "nag" to "Roj laga Wellness List"
+        ),
+        "safety_meds" to mapOf(
+            "en" to "Daily Medication",
+            "hi" to "दैनिक दवाइयाँ",
+            "as" to "দৈনিক ঔষধ",
+            "lus" to "Ni Tin Damdawi",
+            "kha" to "Ki Dawai Minta Ka Sngi",
+            "mni" to "নোংমগী হিদাক-লাংথক",
+            "nag" to "Roj laga Dawaai"
+        ),
+        "safety_hydration" to mapOf(
+            "en" to "Hydration Check",
+            "hi" to "पानी / जलयोजन जाँच",
+            "as" to "পানী খোৱাৰ নিৰীক্ষণ",
+            "lus" to "Tui In Lam Enna",
+            "kha" to "Jingdih Um",
+            "mni" to "ঈশিং থকপগী চেকিং",
+            "nag" to "Paani Khawa Check"
+        ),
+        "safety_dialog_title" to mapOf(
+            "en" to "Emergency Contact & Home Safe Location",
+            "hi" to "आपातकालीन संपर्क एवं घर का सुरक्षित स्थान",
+            "as" to "জৰুৰীকালীন যোগাযোগ আৰু ঘৰৰ সুৰক্ষিত স্থান",
+            "lus" to "Chhiatrup Biak Pawhna & In Hmun",
+            "kha" to "Jingtip Jingkyrduh & Ka Jaka Ing",
+            "mni" to "ইমর্জেন্সী কন্তেক্ত অমসুং য়ুমগী মফম",
+            "nag" to "Emergency Contact & Ghor Safe Location"
+        ),
+        "safety_caregiver_name" to mapOf(
+            "en" to "Caregiver Name",
+            "hi" to "देखभालकर्ता का नाम",
+            "as" to "শুশ্ৰূষাকাৰীৰ নাম",
+            "lus" to "Enkawltu Hming",
+            "kha" to "Kyrteng Nongsumar",
+            "mni" to "য়েংশিনবীবগী মমিং",
+            "nag" to "Caregiver laga Naam"
+        ),
+        "safety_caregiver_phone" to mapOf(
+            "en" to "Caregiver Phone Number",
+            "hi" to "देखभालकर्ता का फ़ोन नंबर",
+            "as" to "শুশ্ৰূষাকাৰীৰ ফোন নম্বৰ",
+            "lus" to "Enkawltu Phone Number",
+            "kha" to "Phone Number Nongsumar",
+            "mni" to "য়েংশিনবীবগী ফোন নম্বর",
+            "nag" to "Caregiver Phone Number"
+        ),
+        "safety_home_address_label" to mapOf(
+            "en" to "Home Street Address or Landmark",
+            "hi" to "घर का पता या लैंडमार्क",
+            "as" to "ঘৰৰ ঠিকনা বা পৰিচিত স্থান",
+            "lus" to "In Awmna / Hriat Awlsamna",
+            "kha" to "Ka Jaka Ing Lanei Ka Dak",
+            "mni" to "য়ুমগী লম্বীগী মমিং নত্রগা লেন্দমার্ক",
+            "nag" to "Ghor Address ki Landmark"
+        ),
+
+        // Cognitive Health Sub-Panel Strings
+        "health_cps_score" to mapOf(
+            "en" to "CPS SCORE",
+            "hi" to "सीपीएस स्कोर",
+            "as" to "চিপিএছ স্ক'ৰ",
+            "lus" to "CPS Tehna",
+            "kha" to "Ka Jingthew CPS",
+            "mni" to "CPS স্কোর",
+            "nag" to "CPS Score"
+        ),
+        "health_cog_age" to mapOf(
+            "en" to "Cognitive Age",
+            "hi" to "संज्ञानात्मक आयु",
+            "as" to "মানসিক বয়স",
+            "lus" to "Rilru Kum",
+            "kha" to "Ka Rta Jingmut",
+            "mni" to "ৱাখল্লোনগী চহী",
+            "nag" to "Dimag laga Umor"
+        ),
+        "health_bio_age" to mapOf(
+            "en" to "Biological Age",
+            "hi" to "जैविक आयु",
+            "as" to "দৈহিক বয়স",
+            "lus" to "Taksa Kum",
+            "kha" to "Ka Rta Met",
+            "mni" to "হকচাংগী চহী",
+            "nag" to "Asli Umor"
+        ),
+        "health_subdomains" to mapOf(
+            "en" to "Clinical Sub-Domain Performance",
+            "hi" to "क्लिनिकल उप-क्षेत्रीय प्रदर्शन",
+            "as" to "ক্লিনিকেল উপ-ক্ষেত্ৰীয় ফলাফল",
+            "lus" to "Thluak Peng Hrang Hrang Tehna",
+            "kha" to "Ka Jingtrei Kam Ki Bynta Jingmut",
+            "mni" to "ক্লিনিকেল তোঙান-তোঙানবা পরফোর্মেন্স",
+            "nag" to "Clinical Sub-Domain Performance"
+        ),
+        "health_forecast" to mapOf(
+            "en" to "Trajectory Forecast",
+            "hi" to "प्रक्षेपवक्र पूर्वानुमान",
+            "as" to "ভৱিষ্যত মানসিক দিশ",
+            "lus" to "Rilru Dinhmun Hmathlir",
+            "kha" to "Ka Jingiaid Ka Jingmut",
+            "mni" to "তুংলমচৎকী ৱাখল্লোন মওং",
+            "nag" to "Aage laga Forecast"
+        ),
+        "health_30days" to mapOf(
+            "en" to "Projected 30 Days",
+            "hi" to "३० दिनों का अनुमान",
+            "as" to "৩০ দিনৰ পূৰ্বানুমান",
+            "lus" to "Ni 30 Hmathlir",
+            "kha" to "30 Sngi Ban Wan",
+            "mni" to "নুমিৎ ৩০ গী প্রজেক্সন",
+            "nag" to "30 Din laga Projection"
+        ),
+        "health_90days" to mapOf(
+            "en" to "Projected 90 Days",
+            "hi" to "९० दिनों का अनुमान",
+            "as" to "৯০ দিনৰ পূৰ্বানুমান",
+            "lus" to "Ni 90 Hmathlir",
+            "kha" to "90 Sngi Ban Wan",
+            "mni" to "নুমিৎ ৯০ গী প্রজেক্সন",
+            "nag" to "90 Din laga Projection"
+        ),
+
+        // Beacon Tracker Sub-Panel Strings
+        "beacon_gps_high_acc" to mapOf(
+            "en" to "Tap here to turn on Google High-Accuracy GPS with one tap.",
+            "hi" to "एक टैप में Google उच्च-सटीक जीपीएस चालू करने के लिए यहाँ टैप करें।",
+            "as" to "এক টিপত Google উচ্চ-সঠিকতা জিপিএছ অন কৰিবলৈ ইয়াত টিপক।",
+            "lus" to "Hmet vawikhatin GPS fiah zawk on rawh.",
+            "kha" to "Kyntuit ban plie ia ka GPS ba biang bha.",
+            "mni" to "অকনবা একুরেসি GPS হৌনবা মসিদা নম্বিয়ু।",
+            "nag" to "Ete dababi High-Accuracy GPS chalu kuribo karone."
+        ),
+        "beacon_bg_perm_title" to mapOf(
+            "en" to "Background Permission Needed",
+            "hi" to "पृष्ठभूमि अनुमति आवश्यक",
+            "as" to "পশ্চাৎভূমি অনুমতিৰ প্ৰয়োজন",
+            "lus" to "Hnunglam Hman Phalsak A Ngai",
+            "kha" to "Donkam Jingbit Ban Trei Kam Sha Lyndet",
+            "mni" to "বেকগ্রাউন্দ অয়াবা দরকার ওইরি",
+            "nag" to "Background Permission Lage"
+        ),
+        "beacon_bg_perm_sub" to mapOf(
+            "en" to "Tap to set 'Allow all the time' for continuous 24/7 tracking.",
+            "hi" to "२४/७ निरंतर ट्रैकिंग हेतु 'हर समय अनुमति दें' सेट करने के लिए टैप करें।",
+            "as" to "২৪/৭ নিৰন্তৰ নিৰীক্ষণৰ বাবে 'সদায় অনুমতি দিয়ক' বাছক।",
+            "lus" to "24/7 vil reng nan 'Allow all the time' thlang rawh.",
+            "kha" to "Jied 'Allow all the time' ban ioh peit 24/7.",
+            "mni" to "২৪/৭ ত্রাকিংগীদমক 'Allow all the time' খনবিয়ু।",
+            "nag" to "24/7 tracking karone 'Allow all the time' rakhabi."
+        ),
+        "beacon_bg_perm_allowed" to mapOf(
+            "en" to "Background Location: Allowed All the Time",
+            "hi" to "पृष्ठभूमि स्थान: हर समय अनुमत",
+            "as" to "পশ্চাৎভূমি স্থান: সদায় অনুমতি প্ৰদত্ত",
+            "lus" to "Hnunglam Awmna: Phalsak Reng A Ni",
+            "kha" to "Ka Jaka Sha Lyndet: Shah Baroh Ka Por",
+            "mni" to "বেকগ্রাউন্দ মফম: মতম পুম্বদা য়ারি",
+            "nag" to "Background Location: Sob Koste Allowed Ase"
+        ),
+        "beacon_live_badge" to mapOf(
+            "en" to "LIVE",
+            "hi" to "लाइव",
+            "as" to "লাইভ",
+            "lus" to "LIVE",
+            "kha" to "MYNTA",
+            "mni" to "লাইভ",
+            "nag" to "LIVE"
+        ),
+        "beacon_acquiring" to mapOf(
+            "en" to "Acquiring exact GPS satellite fix...",
+            "hi" to "सटीक जीपीएस उपग्रह सिग्नल प्राप्त किया जा रहा है...",
+            "as" to "সঠিক জিপিএছ উপগ্ৰহ সংকেত লোৱা হৈছে...",
+            "lus" to "GPS satellite lak mek a ni...",
+            "kha" to "Dang wad ia ka dak satellite GPS...",
+            "mni" to "GPS সেতেলাইত সিগনেল লৌরি...",
+            "nag" to "Exact GPS satellite dhori ase..."
+        ),
+        "beacon_start_hint" to mapOf(
+            "en" to "Start broadcasting to view live GPS coordinates and send real-time pings to caregivers.",
+            "hi" to "लाइव जीपीएस निर्देशांक देखने और देखभालकर्ताओं को सिग्नल भेजने के लिए प्रसारण शुरू करें।",
+            "as" to "লাইভ জিপিএছ চাবলৈ আৰু পৰিয়াললৈ সংকেত পঠাবলৈ সম্প্ৰচাৰ আৰম্ভ কৰক।",
+            "lus" to "GPS hmuh nan leh enkawltute hnena thawn nan thawn tan rawh.",
+            "kha" to "Sdang ban phah ia ka jaka sha ki nongsumar.",
+            "mni" to "লাইভ GPS মফম য়েংনবা অমসুং ইমুংদা সিগনেল থানবা ব্রোদকাস্ত হৌবিয়ু।",
+            "nag" to "Live GPS coordinates saikina caregiver ke pathabole broadcast chalu kuribi."
+        ),
+        "beacon_continue" to mapOf(
+            "en" to "Continue",
+            "hi" to "जारी रखें",
+            "as" to "আগবাঢ়ক",
+            "lus" to "Chhunzawm Rawh",
+            "kha" to "Iaibteng",
+            "mni" to "চৎখিবিয়ু",
+            "nag" to "Aage Jaabi"
+        ),
+        "beacon_later" to mapOf(
+            "en" to "Later",
+            "hi" to "बाद में",
+            "as" to "পাছত",
+            "lus" to "Nakinah",
+            "kha" to "Hadien",
+            "mni" to "তুংদা",
+            "nag" to "Pichete"
+        ),
+
+        // Brain Exercises Sub-Panel Strings
+        "game1_matched_status" to mapOf(
+            "en" to "pairs matched",
+            "hi" to "जोड़े मिले",
+            "as" to "যোৰ মিলিল",
+            "lus" to "inmil tawh",
+            "kha" to "ki jingsa ba iadei",
+            "mni" to "পেয়ার য়ানরে",
+            "nag" to "jodi milise"
+        ),
+        "game2_watch_glow" to mapOf(
+            "en" to "Watch the pattern glow...",
+            "hi" to "पैटर्न की चमक को ध्यान से देखें...",
+            "as" to "প্ৰতিৰূপৰ উজ্বলতা লক্ষ্য কৰক...",
+            "lus" to "A eng dan hi ngun takin en rawh...",
+            "kha" to "Peit thuh ia ka jingthaba...",
+            "mni" to "প্যাতর্নগী মঙাল য়েংবিয়ু...",
+            "nag" to "Pattern chowa bhalte..."
+        ),
+        "game2_your_turn_prompt" to mapOf(
+            "en" to "Your turn! Tap the pads in order",
+            "hi" to "आपकी बारी! उसी क्रम में पैड पर टैप करें",
+            "as" to "আপোনাৰ পাল! সেই ক্ৰমত পেডত টিপক",
+            "lus" to "I hun ve le! A indawtin hmet rawh",
+            "kha" to "Ka pali jong phi! Kyntuit beit",
+            "mni" to "অদোমগী তাঞ্জা! চপ মান্নবা মতুং ইন্না নম্বিয়ু",
+            "nag" to "Apun laga baari! Order te dababi"
+        ),
+        "game2_level_cleared_msg" to mapOf(
+            "en" to "Level Cleared! Next level...",
+            "hi" to "स्तर पूरा हुआ! अगला स्तर...",
+            "as" to "স্তৰ সমাপ্ত! পৰৱৰ্তী স্তৰ...",
+            "lus" to "I thiam e! A dawt leh...",
+            "kha" to "La dep! Ka kylla bud...",
+            "mni" to "লেভেল লোয়রে! মথংগী লেভেল...",
+            "nag" to "Level Kothom! Dusra level..."
+        ),
+        "game2_missed_msg" to mapOf(
+            "en" to "Missed! Watch again...",
+            "hi" to "चूक गए! दोबारा ध्यान से देखें...",
+            "as" to "ভুল হ'ল! পুনৰ চাওক...",
+            "lus" to "I thelh e! En ṭha leh rawh...",
+            "kha" to "Bakla! Peit biang...",
+            "mni" to "সোইরে! অমুক্কা য়েংবিয়ু...",
+            "nag" to "Galti hoise! Phir saabi..."
+        ),
+        "game3_tap_ink" to mapOf(
+            "en" to "Tap the INK COLOR",
+            "hi" to "स्याही का रंग चुनें",
+            "as" to "চিঞাহীৰ ৰং বাছক",
+            "lus" to "A Rawng Dik Hmet Rawh",
+            "kha" to "Kyntuit ia ka Rong",
+            "mni" to "মচুগী মচু নম্বিয়ু",
+            "nag" to "INK COLOR ke dababi"
+        ),
+        "game3_select_prompt" to mapOf(
+            "en" to "Select the INK COLOR:",
+            "hi" to "स्याही का रंग चुनें:",
+            "as" to "চিঞাহীৰ ৰং বাছক:",
+            "lus" to "A rawng dik thlang rawh:",
+            "kha" to "Jied ia ka Rong:",
+            "mni" to "মচুগী মচু খনবিয়ু:",
+            "nag" to "INK COLOR select kuribi:"
+        ),
+        "game4_next_prompt" to mapOf(
+            "en" to "Next",
+            "hi" to "अगला",
+            "as" to "পৰৱৰ্তী",
+            "lus" to "A dawt",
+            "kha" to "Bud",
+            "mni" to "মথং",
+            "nag" to "Next"
+        ),
+
+        // Voice Guidance Panel
+        "voice_preview_title" to mapOf(
+            "en" to "Voice Encouragement Preview",
+            "hi" to "आवाज़ प्रोत्साहन पूर्वावलोकन",
+            "as" to "কণ্ঠ উৎসাহ পূৰ্বদৰ্শন",
+            "lus" to "Aw Puihna Ngaihthlakna",
+            "kha" to "Ka Sur Kyntu Kynpham",
+            "mni" to "খোল্লাক ইথিল য়েংবা",
+            "nag" to "Awaaz Modot Preview"
+        ),
+        "voice_preview_btn" to mapOf(
+            "en" to "Hear Encouraging Voice",
+            "hi" to "प्रोत्साहक आवाज़ सुनें",
+            "as" to "উৎসাহজনক মাত শুনক",
+            "lus" to "Aw Ngaihnawm Ngaihtla Rawh",
+            "kha" to "Sngap ia ka Sur",
+            "mni" to "ইথিল পীবী খোঞ্জেল তাবিয়ু",
+            "nag" to "Awaaz Sunibi"
+        ),
+
         // App header & subtitle
         "app_title" to mapOf(
             "en" to "Smaran",
@@ -674,6 +1337,60 @@ object MultilingualManager {
             "kha" to "La dep! Kawei pat...",
             "mni" to "লেভেল লোইরে! মথংগী...",
             "nag" to "Level Pass Hoise! Aru aage..."
+        ),
+        "lbl_level" to mapOf(
+            "en" to "Level",
+            "hi" to "स्तर",
+            "as" to "স্তৰ",
+            "lus" to "Zirna",
+            "kha" to "Kyrdan",
+            "mni" to "লেভেল",
+            "nag" to "Level"
+        ),
+        "sub_memory" to mapOf(
+            "en" to "Memory Retention",
+            "hi" to "स्मृति अवधारण",
+            "as" to "স্মৃতি ধাৰণ",
+            "lus" to "Hriatrengna Vawn Nun",
+            "kha" to "Kynmaw Bha",
+            "mni" to "নীংশিংবা থম্বা",
+            "nag" to "Yaad Rakhibo Pora"
+        ),
+        "sub_executive" to mapOf(
+            "en" to "Executive Function",
+            "hi" to "कार्यकारी क्षमता",
+            "as" to "কাৰ্যনিৰ্বাহী ক্ষমতা",
+            "lus" to "Thluak Hman Thiamna",
+            "kha" to "Borabor Jingtrei Kam",
+            "mni" to "থবক তৌবগী ৱাখল",
+            "nag" to "Kaam Dimag Power"
+        ),
+        "sub_reaction" to mapOf(
+            "en" to "Reaction Latency",
+            "hi" to "प्रतिक्रिया समय",
+            "as" to "প্ৰতিক্ৰিয়াৰ সময়",
+            "lus" to "Chhan Let Zung Zungna",
+            "kha" to "Ka Por Ban Jubab",
+            "mni" to "থোক্লকপা মতম",
+            "nag" to "Reaction Time"
+        ),
+        "sub_autobio" to mapOf(
+            "en" to "Autobiographical Recall",
+            "hi" to "व्यक्तिगत स्मृति स्मरण",
+            "as" to "আত্মজীৱনীমূলক স্মৃতি",
+            "lus" to "Mahni Chanchin Hriatletna",
+            "kha" to "Kynmaw Ia La Ka Jingim",
+            "mni" to "মশাগী পুন্সি নীংশিংবা",
+            "nag" to "Nijor Yaad Ahibo"
+        ),
+        "sub_recovery" to mapOf(
+            "en" to "Error Recovery",
+            "hi" to "त्रुटि सुधार दर",
+            "as" to "ভুল সংশোধন ক্ষমতা",
+            "lus" to "Siamṭhat Leh Varna",
+            "kha" to "Pynbha Biang Ia Ka Jingbakla",
+            "mni" to "সোইবা শেমদোকপা",
+            "nag" to "Galti Thik Kora Rate"
         ),
         "game1_hint" to mapOf(
             "en" to "Tap cards to uncover matching pairs",

@@ -1,4 +1,4 @@
-package net.kibotu.geofencerelay.ui.auth
+﻿package net.kibotu.geofencerelay.ui.auth
 
 import android.accounts.AccountManager
 import android.app.Activity
@@ -13,9 +13,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -23,7 +26,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -39,9 +41,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import net.kibotu.geofencerelay.R
+import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
 import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +55,12 @@ fun GoogleSignInScreen(
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE) }
+    val settingsPrefs = remember { context.getSharedPreferences("app_settings", Context.MODE_PRIVATE) }
+    var selectedLanguageCode by remember {
+        mutableStateOf(settingsPrefs.getString("selected_language", "en") ?: "en")
+    }
+
+    var rememberDevice by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var detectedAccounts by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -66,6 +74,17 @@ fun GoogleSignInScreen(
         GoogleSignIn.getClient(context, gso)
     }
 
+    fun saveAuthAndProceed(email: String) {
+        val clean = email.trim().lowercase()
+        prefs.edit()
+            .putBoolean("is_device_remembered", rememberDevice)
+            .putBoolean("is_device_authenticated", true)
+            .putString("user_google_email", clean)
+            .putString("user_role", if (isTrackerMode) "tracker" else "guardian")
+            .commit()
+        onSignInSuccess(clean)
+    }
+
     fun refreshDetectedAccounts() {
         try {
             val am = AccountManager.get(context)
@@ -75,16 +94,16 @@ fun GoogleSignInScreen(
     }
 
     LaunchedEffect(Unit) {
+        // Auto-login if device was remembered
+        val isRemembered = prefs.getBoolean("is_device_remembered", false) || prefs.getBoolean("is_device_authenticated", false)
         val savedEmail = prefs.getString("user_google_email", null)
-        if (!savedEmail.isNullOrBlank()) {
+        if (isRemembered && !savedEmail.isNullOrBlank()) {
             onSignInSuccess(savedEmail)
             return@LaunchedEffect
         }
         val lastAccount = GoogleSignIn.getLastSignedInAccount(context)
         if (lastAccount != null && !lastAccount.email.isNullOrBlank()) {
-            val clean = lastAccount.email!!.trim().lowercase()
-            prefs.edit().putString("user_google_email", clean).apply()
-            onSignInSuccess(clean)
+            saveAuthAndProceed(lastAccount.email!!)
             return@LaunchedEffect
         }
         refreshDetectedAccounts()
@@ -97,9 +116,7 @@ fun GoogleSignInScreen(
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             val accountName = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
             if (!accountName.isNullOrBlank()) {
-                val clean = accountName.trim().lowercase()
-                prefs.edit().putString("user_google_email", clean).apply()
-                onSignInSuccess(clean)
+                saveAuthAndProceed(accountName)
             }
         }
         refreshDetectedAccounts()
@@ -114,9 +131,7 @@ fun GoogleSignInScreen(
             val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
             val email = account.email
             if (!email.isNullOrBlank()) {
-                val clean = email.trim().lowercase()
-                prefs.edit().putString("user_google_email", clean).apply()
-                onSignInSuccess(clean)
+                saveAuthAndProceed(email)
             } else {
                 errorMessage = "Google Account did not return an email address."
             }
@@ -137,10 +152,8 @@ fun GoogleSignInScreen(
         isLoading = true
         errorMessage = null
         try {
-            googleSignInClient.signOut().addOnCompleteListener {
-                val signInIntent: Intent = googleSignInClient.signInIntent
-                googleSignInLauncher.launch(signInIntent)
-            }
+            val signInIntent: Intent = googleSignInClient.signInIntent
+            googleSignInLauncher.launch(signInIntent)
         } catch (e: Exception) {
             isLoading = false
             try {
@@ -179,7 +192,6 @@ fun GoogleSignInScreen(
             val h = size.height
             val strokeColor = saffronGold.copy(alpha = 0.045f)
 
-            // Radiating concentric artistic rings from top-center
             drawCircle(
                 color = strokeColor,
                 radius = w * 0.42f,
@@ -190,50 +202,76 @@ fun GoogleSignInScreen(
                 radius = w * 0.62f,
                 center = Offset(w * 0.5f, h * 0.16f)
             )
-            drawCircle(
-                color = strokeColor,
-                radius = w * 0.84f,
-                center = Offset(w * 0.5f, h * 0.16f)
-            )
-
-            // Traditional diamond / rhombus weave motifs across corners
-            val diamondSize = 36f
-            for (i in 0..4) {
-                val x = 24f + i * 48f
-                val y = h - 60f
-                drawCircle(color = richIndigo.copy(alpha = 0.035f), radius = diamondSize, center = Offset(x, y))
-            }
         }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
-                .padding(top = 24.dp, bottom = 16.dp),
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Artistic Branded Header & Logo Emblem
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // Soft Radiant Medallion (No harsh white block!)
-                Box(
-                    contentAlignment = Alignment.Center,
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Language Switcher Row at Top of Login Screen
+                Row(
                     modifier = Modifier
-                        .size(100.dp)
-                        .shadow(16.dp, CircleShape, spotColor = saffronGold.copy(alpha = 0.35f))
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(bottom = 10.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    MultilingualManager.supportedLanguages.forEach { lang ->
+                        val isSelected = lang.code == selectedLanguageCode
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 3.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isSelected) saffronGold.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.08f))
+                                .border(
+                                    1.dp,
+                                    if (isSelected) saffronGold else Color.White.copy(alpha = 0.15f),
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .clickable {
+                                    selectedLanguageCode = lang.code
+                                    settingsPrefs.edit().putString("selected_language", lang.code).commit()
+                                }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(lang.flagEmoji, fontSize = 13.sp)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = lang.nativeName,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) saffronGold else Color.White.copy(alpha = 0.85f)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // App Logo
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.sweepGradient(
-                                listOf(
-                                    saffronGold,
-                                    warmTerracotta,
-                                    deepEmerald,
-                                    richIndigo,
-                                    saffronGold
-                                )
+                                listOf(saffronGold, warmTerracotta, deepEmerald, richIndigo, saffronGold)
                             )
                         )
-                        .padding(3.dp) // Outer ornamental border
+                        .padding(2.5.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
@@ -253,7 +291,7 @@ fun GoogleSignInScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Title with Sanskrit & Regional Heritage Honor
                 Row(
@@ -261,16 +299,16 @@ fun GoogleSignInScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Smaran",
-                        fontSize = 32.sp,
+                        text = MultilingualManager.tr("app_title", selectedLanguageCode),
+                        fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White,
                         letterSpacing = 0.8.sp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "स्मरण",
-                        fontSize = 18.sp,
+                        text = "à¤¸à¥à¤®à¤°à¤£",
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = saffronGold.copy(alpha = 0.85f),
                         letterSpacing = 1.sp
@@ -280,7 +318,7 @@ fun GoogleSignInScreen(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "Dementia Care & Regional Heritage Companion",
+                    text = MultilingualManager.tr("auth_tagline", selectedLanguageCode),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = saffronGold.copy(alpha = 0.95f),
@@ -288,13 +326,13 @@ fun GoogleSignInScreen(
                 )
 
                 Text(
-                    text = "AI Neuro-Telemetry • Cultural Reminiscence • Safe GPS Radar",
+                    text = MultilingualManager.tr("auth_features_sub", selectedLanguageCode),
                     fontSize = 11.sp,
                     color = Color.White.copy(alpha = 0.65f),
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Artistic Regional Heritage & Clinical Sentinel Card
                 Card(
@@ -319,28 +357,27 @@ fun GoogleSignInScreen(
                             .padding(14.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Traditional ornamental badge header
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Text("✦", fontSize = 11.sp, color = saffronGold)
+                            Text("âœ¦", fontSize = 11.sp, color = saffronGold)
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "REGIONAL HERITAGE & COGNITIVE SENTINEL",
+                                text = MultilingualManager.tr("auth_badge", selectedLanguageCode),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Black,
                                 color = saffronGold,
                                 letterSpacing = 1.sp
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("✦", fontSize = 11.sp, color = saffronGold)
+                            Text("âœ¦", fontSize = 11.sp, color = saffronGold)
                         }
 
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Rooted in rich regional traditions and clinical neuroscience. Preserving cherished memories, family connections, and 24/7 patient boundary safety.",
+                            text = MultilingualManager.tr("auth_badge_desc", selectedLanguageCode),
                             fontSize = 11.sp,
                             color = Color.White.copy(alpha = 0.80f),
                             textAlign = TextAlign.Center,
@@ -349,12 +386,11 @@ fun GoogleSignInScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // 4 Artistic Regional Feature Chips (2x2 Grid)
+                        // 4 Regional Feature Chips (2x2 Grid)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // Chip 1: Regional Memories
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -365,7 +401,7 @@ fun GoogleSignInScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "🌸 Regional Roots",
+                                    text = MultilingualManager.tr("auth_chip_roots", selectedLanguageCode),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = saffronGold,
@@ -373,7 +409,6 @@ fun GoogleSignInScreen(
                                 )
                             }
 
-                            // Chip 2: Clinical Neuro-Care
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -384,7 +419,7 @@ fun GoogleSignInScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "🧠 Neuro-Games",
+                                    text = MultilingualManager.tr("auth_chip_games", selectedLanguageCode),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF82B1FF),
@@ -399,7 +434,6 @@ fun GoogleSignInScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // Chip 3: Geofence Radar
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -410,7 +444,7 @@ fun GoogleSignInScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "🛡️ GPS Sentinel",
+                                    text = MultilingualManager.tr("auth_chip_gps", selectedLanguageCode),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = deepEmerald,
@@ -418,7 +452,6 @@ fun GoogleSignInScreen(
                                 )
                             }
 
-                            // Chip 4: Home Safe Zone
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -429,7 +462,7 @@ fun GoogleSignInScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "🏡 Take Me Home",
+                                    text = MultilingualManager.tr("auth_chip_home", selectedLanguageCode),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = warmTerracotta,
@@ -441,7 +474,9 @@ fun GoogleSignInScreen(
                 }
             }
 
-            // Apple iOS Central Sign-In Squircle Card
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Central Sign-In Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF161324)),
@@ -460,17 +495,17 @@ fun GoogleSignInScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(18.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Sign In",
+                        text = MultilingualManager.tr("auth_sign_in", selectedLanguageCode),
                         fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     // Detected accounts 1-tap select list
                     if (detectedAccounts.isNotEmpty()) {
@@ -483,10 +518,9 @@ fun GoogleSignInScreen(
                                     .background(Color(0xFF0F0D1B))
                                     .border(1.dp, Color(0xFF26213A), RoundedCornerShape(14.dp))
                                     .clickable {
-                                        prefs.edit().putString("user_google_email", acc).apply()
-                                        onSignInSuccess(acc)
+                                        saveAuthAndProceed(acc)
                                     }
-                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
@@ -510,22 +544,22 @@ fun GoogleSignInScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(acc, fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
-                                    Text("1-Tap Sign In", fontSize = 10.sp, color = deepEmerald, fontWeight = FontWeight.Medium)
+                                    Text(MultilingualManager.tr("auth_1tap", selectedLanguageCode), fontSize = 10.sp, color = deepEmerald, fontWeight = FontWeight.Medium)
                                 }
                                 Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.White.copy(alpha = 0.4f))
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
 
-                    // Apple-styled Google Sign-In Button
+                    // Google Sign-In Button
                     Button(
                         onClick = { launchDirectGoogleSignIn() },
                         enabled = !isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
+                            .height(50.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = GoogleColors.Blue
                         ),
@@ -534,13 +568,13 @@ fun GoogleSignInScreen(
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
+                                modifier = Modifier.size(20.dp),
                                 color = Color.White,
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                "Signing In...",
+                                MultilingualManager.tr("auth_signing_in", selectedLanguageCode),
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
@@ -561,13 +595,69 @@ fun GoogleSignInScreen(
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    if (detectedAccounts.isNotEmpty()) "Choose Another Account" else "Continue with Google",
+                                    if (detectedAccounts.isNotEmpty())
+                                        MultilingualManager.tr("auth_choose_another", selectedLanguageCode)
+                                    else
+                                        MultilingualManager.tr("auth_continue_google", selectedLanguageCode),
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
+                                    fontSize = 14.sp
                                 )
                             }
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // âš¡ Quick Device Access (Continue as This Device)
+                    OutlinedButton(
+                        onClick = {
+                            val devEmail = "patient.${android.os.Build.MODEL.replace(' ', '_').lowercase()}@smaran.local"
+                            saveAuthAndProceed(devEmail)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(46.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.2.dp, saffronGold.copy(alpha = 0.7f)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = saffronGold)
+                    ) {
+                        Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = saffronGold, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = MultilingualManager.tr("auth_quick_access", selectedLanguageCode),
+                            color = saffronGold,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Remember This Device Checkbox
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { rememberDevice = !rememberDevice }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Checkbox(
+                            checked = rememberDevice,
+                            onCheckedChange = { rememberDevice = it },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = deepEmerald,
+                                checkmarkColor = Color.White
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = MultilingualManager.tr("auth_remember_device", selectedLanguageCode),
+                            fontSize = 11.sp,
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontWeight = FontWeight.Medium
+                        )
                     }
 
                     AnimatedVisibility(visible = errorMessage != null) {
@@ -575,7 +665,7 @@ fun GoogleSignInScreen(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 12.dp),
+                                    .padding(top = 10.dp),
                                 color = IosColors.SystemRed.copy(alpha = 0.12f),
                                 shape = RoundedCornerShape(10.dp),
                                 border = androidx.compose.foundation.BorderStroke(1.dp, IosColors.SystemRed)

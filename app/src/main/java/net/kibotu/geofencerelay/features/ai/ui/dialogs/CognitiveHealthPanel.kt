@@ -169,7 +169,7 @@ fun CognitiveHealthPanel(
                                     color = IosColors.SystemPink
                                 )
                                 Text(
-                                    text = "CPS SCORE",
+                                    text = MultilingualManager.tr("health_cps_score", selectedLanguageCode),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = IosColors.LabelSecondary,
@@ -191,7 +191,7 @@ fun CognitiveHealthPanel(
                                     fontWeight = FontWeight.Bold,
                                     color = IosColors.SystemBlue
                                 )
-                                Text("Cognitive Age", fontSize = 11.sp, color = IosColors.LabelSecondary)
+                                Text(MultilingualManager.tr("health_cog_age", selectedLanguageCode), fontSize = 11.sp, color = IosColors.LabelSecondary)
                             }
                             Box(
                                 modifier = Modifier
@@ -206,7 +206,7 @@ fun CognitiveHealthPanel(
                                     fontWeight = FontWeight.Bold,
                                     color = IosColors.LabelPrimary
                                 )
-                                Text("Biological Age", fontSize = 11.sp, color = IosColors.LabelSecondary)
+                                Text(MultilingualManager.tr("health_bio_age", selectedLanguageCode), fontSize = 11.sp, color = IosColors.LabelSecondary)
                             }
                         }
                     }
@@ -223,7 +223,7 @@ fun CognitiveHealthPanel(
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
                         Text(
-                            text = "Clinical Sub-Domain Performance",
+                            text = MultilingualManager.tr("health_subdomains", selectedLanguageCode),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = IosColors.LabelPrimary
@@ -231,11 +231,11 @@ fun CognitiveHealthPanel(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        SubScoreRow("Memory Retention", assessment.subScores.memoryRetentionIndex, IosColors.SystemBlue)
-                        SubScoreRow("Executive Function", assessment.subScores.executiveFunctionIndex, IosColors.SystemPurple)
-                        SubScoreRow("Reaction Latency", assessment.subScores.reactionLatencyScore, IosColors.SystemGreen)
-                        SubScoreRow("Autobiographical Recall", assessment.subScores.autobiographicalReminiscence, IosColors.SystemOrange)
-                        SubScoreRow("Error Recovery", assessment.subScores.errorRecoveryRate, IosColors.SystemTeal)
+                        SubScoreRow(MultilingualManager.tr("sub_memory", selectedLanguageCode), assessment.subScores.memoryRetentionIndex, IosColors.SystemBlue)
+                        SubScoreRow(MultilingualManager.tr("sub_executive", selectedLanguageCode), assessment.subScores.executiveFunctionIndex, IosColors.SystemPurple)
+                        SubScoreRow(MultilingualManager.tr("sub_reaction", selectedLanguageCode), assessment.subScores.reactionLatencyScore, IosColors.SystemGreen)
+                        SubScoreRow(MultilingualManager.tr("sub_autobio", selectedLanguageCode), assessment.subScores.autobiographicalReminiscence, IosColors.SystemOrange)
+                        SubScoreRow(MultilingualManager.tr("sub_recovery", selectedLanguageCode), assessment.subScores.errorRecoveryRate, IosColors.SystemTeal)
                     }
                 }
 
@@ -253,7 +253,7 @@ fun CognitiveHealthPanel(
                             Icon(Icons.Default.TrendingUp, contentDescription = null, tint = IosColors.SystemGreen)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Trajectory Forecast: ${assessment.trajectoryStatus}",
+                                text = "${MultilingualManager.tr("health_forecast", selectedLanguageCode)}: ${assessment.trajectoryStatus}",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = IosColors.LabelPrimary
@@ -267,11 +267,11 @@ fun CognitiveHealthPanel(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column {
-                                Text("Projected 30 Days", fontSize = 12.sp, color = IosColors.LabelSecondary)
+                                Text(MultilingualManager.tr("health_30days", selectedLanguageCode), fontSize = 12.sp, color = IosColors.LabelSecondary)
                                 Text("${assessment.projectedCps30Days} CPS", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.SystemGreen)
                             }
                             Column {
-                                Text("Projected 90 Days", fontSize = 12.sp, color = IosColors.LabelSecondary)
+                                Text(MultilingualManager.tr("health_90days", selectedLanguageCode), fontSize = 12.sp, color = IosColors.LabelSecondary)
                                 Text("${assessment.projectedCps90Days} CPS", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.SystemBlue)
                             }
                         }

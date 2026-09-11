@@ -145,7 +145,7 @@ fun GuardianScreen(
 
                     // Sign Out Button
                     IconButton(onClick = {
-                        context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+                        context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE).edit().clear().commit()
                         onSignOut()
                     }) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out", tint = Color.White)

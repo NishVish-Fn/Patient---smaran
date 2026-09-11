@@ -140,7 +140,7 @@ fun VoiceLanguagePanel(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Voice Encouragement Preview",
+                        text = MultilingualManager.tr("voice_preview_title", selectedLanguageCode),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = IosColors.LabelPrimary
@@ -166,7 +166,7 @@ fun VoiceLanguagePanel(
                     ) {
                         Icon(Icons.Default.VolumeUp, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Hear Encouraging Voice", fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(MultilingualManager.tr("voice_preview_btn", selectedLanguageCode), fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }
@@ -175,6 +175,9 @@ fun VoiceLanguagePanel(
         }
 
         // Apple iOS Assistive Access Back Button
-        IosBackPillButton(onClick = onBack)
+        IosBackPillButton(
+            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+            onClick = onBack
+        )
     }
 }

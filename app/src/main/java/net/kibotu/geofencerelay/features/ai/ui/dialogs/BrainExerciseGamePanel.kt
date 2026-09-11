@@ -162,7 +162,7 @@ private fun GameHubSelectionView(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "4 Clinical Cognitive Games • Multi-Round Full-Screen Exercises",
+                text = MultilingualManager.tr("games_hub_sub", selectedLanguageCode),
                 fontSize = 12.sp,
                 color = IosColors.LabelSecondary,
                 textAlign = TextAlign.Center
@@ -493,13 +493,13 @@ private fun FullScreenMemoryMatchingGameView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Jumbo Memory Match",
+                text = MultilingualManager.tr("game1_name", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = IosColors.LabelPrimary
             )
             Text(
-                text = "Round $currentRound of $maxRounds • Matched ${cards.count { it.isMatched } / 2} of $pairsForRound pairs",
+                text = "${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxRounds • ${cards.count { it.isMatched } / 2} / $pairsForRound ${MultilingualManager.tr("game1_matched_status", selectedLanguageCode)}",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = GoogleColors.Blue
@@ -645,7 +645,7 @@ private fun FullScreenPatternSequenceGameView(
     var userTappedSteps by remember { mutableStateOf<List<Int>>(emptyList()) }
     var isFinished by remember { mutableStateOf(false) }
     var completionMessage by remember { mutableStateOf("") }
-    var feedbackText by remember { mutableStateOf("Watch the pattern glow...") }
+    var feedbackText by remember { mutableStateOf(MultilingualManager.tr("game2_watch_glow", selectedLanguageCode)) }
     val startTime = remember { System.currentTimeMillis() }
 
     fun playSequenceForLevel(lvl: Int) {
@@ -653,7 +653,7 @@ private fun FullScreenPatternSequenceGameView(
         highlightedIndex = null
         userTappedHighlightIdx = null
         userTappedSteps = emptyList()
-        feedbackText = "Watch the pattern glow..."
+        feedbackText = MultilingualManager.tr("game2_watch_glow", selectedLanguageCode)
         isShowingSequence = true
     }
 
@@ -667,7 +667,7 @@ private fun FullScreenPatternSequenceGameView(
                 delay(200)
             }
             isShowingSequence = false
-            feedbackText = "Your turn! Tap the pads in order"
+            feedbackText = MultilingualManager.tr("game2_your_turn_prompt", selectedLanguageCode)
         }
     }
 
@@ -684,13 +684,13 @@ private fun FullScreenPatternSequenceGameView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "6-Pad Sequence Recall",
+                text = MultilingualManager.tr("game2_name", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = IosColors.LabelPrimary
             )
             Text(
-                text = "Level $currentLevel of $maxLevels • $feedbackText",
+                text = "${MultilingualManager.tr("lbl_level", selectedLanguageCode)} $currentLevel ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxLevels • $feedbackText",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isShowingSequence) GoogleColors.Red else GoogleColors.Blue,
@@ -775,7 +775,7 @@ private fun FullScreenPatternSequenceGameView(
                                         if (newSteps.size == sequence.size) {
                                             if (currentLevel < maxLevels) {
                                                 coroutineScope.launch {
-                                                    feedbackText = "Level $currentLevel Cleared! Next level..."
+                                                    feedbackText = "${MultilingualManager.tr("lbl_level", selectedLanguageCode)} $currentLevel: ${MultilingualManager.tr("game2_level_cleared_msg", selectedLanguageCode)}"
                                                     delay(700)
                                                     currentLevel++
                                                     playSequenceForLevel(currentLevel)
@@ -800,7 +800,7 @@ private fun FullScreenPatternSequenceGameView(
                                     } else {
                                         // User missed step - replay sequence cleanly!
                                         coroutineScope.launch {
-                                            feedbackText = "Missed! Watch again..."
+                                            feedbackText = MultilingualManager.tr("game2_missed_msg", selectedLanguageCode)
                                             delay(700)
                                             userTappedSteps = emptyList()
                                             isShowingSequence = true
@@ -909,13 +909,13 @@ private fun ColorStroopChallengeGameView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Color-Word Stroop Focus",
+                text = MultilingualManager.tr("game3_title", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = IosColors.LabelPrimary
             )
             Text(
-                text = "Tap the INK COLOR • Round $currentRound of $totalRounds (Score: $scoreCount)",
+                text = "${MultilingualManager.tr("game3_tap_ink", selectedLanguageCode)} • ${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $totalRounds (${MultilingualManager.tr("lbl_score", selectedLanguageCode)}: $scoreCount)",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = GoogleColors.Blue,
@@ -959,9 +959,9 @@ private fun ColorStroopChallengeGameView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-                Text("Select the INK COLOR:", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+            Text(MultilingualManager.tr("game3_select_prompt", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
 
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -1041,13 +1041,13 @@ private fun AscendingTrailMakingGameView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Ascending Number Trail",
+                text = MultilingualManager.tr("game4_title", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = IosColors.LabelPrimary
             )
             Text(
-                text = "Round $currentRound of $maxRound • Next: [$nextExpectedNumber]",
+                text = "${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxRound • ${MultilingualManager.tr("game4_next_prompt", selectedLanguageCode)}: [$nextExpectedNumber]",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = GoogleColors.Blue

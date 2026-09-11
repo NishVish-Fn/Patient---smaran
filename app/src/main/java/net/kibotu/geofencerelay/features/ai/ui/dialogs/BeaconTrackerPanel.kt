@@ -476,7 +476,7 @@ fun BeaconTrackerPanel(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(GoogleColors.Green))
                                 Spacer(modifier = Modifier.width(5.dp))
-                                Text("LIVE", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = GoogleColors.Green)
+                                Text(MultilingualManager.tr("beacon_live_badge", selectedLanguageCode), fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = GoogleColors.Green)
                             }
                         }
                     }
@@ -542,11 +542,11 @@ fun BeaconTrackerPanel(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = GoogleColors.Blue)
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("Acquiring exact GPS satellite fix...", fontSize = 13.sp, color = IosColors.LabelSecondary)
+                            Text(MultilingualManager.tr("beacon_acquiring", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
                         }
                     } else {
                         Text(
-                            text = "Start broadcasting to view live GPS coordinates and send real-time pings to caregivers.",
+                            text = MultilingualManager.tr("beacon_start_hint", selectedLanguageCode),
                             fontSize = 12.sp,
                             color = IosColors.LabelSecondary
                         )
@@ -650,16 +650,19 @@ fun BeaconTrackerPanel(
         }
 
         // Apple iOS Assistive Access Back Button
-        IosBackPillButton(onClick = onBack)
+        IosBackPillButton(
+            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+            onClick = onBack
+        )
 
         // Background Permission Dialog
         if (showBackgroundPermissionDialog) {
             AlertDialog(
                 onDismissRequest = { showBackgroundPermissionDialog = false },
-                title = { Text("Background Location Permission", fontWeight = FontWeight.Bold) },
+                title = { Text(MultilingualManager.tr("beacon_bg_perm_title", selectedLanguageCode), fontWeight = FontWeight.Bold) },
                 text = {
                     Text(
-                        "To enable 24/7 continuous location broadcasting even when the screen is locked or app is minimized, please choose 'Allow all the time' in the system prompt.",
+                        MultilingualManager.tr("beacon_bg_perm_sub", selectedLanguageCode),
                         fontSize = 13.sp,
                         color = Color.DarkGray
                     )
@@ -674,12 +677,12 @@ fun BeaconTrackerPanel(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue)
                     ) {
-                        Text("Continue", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(MultilingualManager.tr("beacon_continue", selectedLanguageCode), color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showBackgroundPermissionDialog = false }) {
-                        Text("Later", color = Color.Gray)
+                        Text(MultilingualManager.tr("beacon_later", selectedLanguageCode), color = Color.Gray)
                     }
                 },
                 containerColor = Color.White,

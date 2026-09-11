@@ -160,7 +160,7 @@ fun SafetyAlertsPanel(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Sos, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text("EMERGENCY SOS", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text(MultilingualManager.tr("safety_sos", selectedLanguageCode), fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color.White)
                     }
                 }
 
@@ -258,8 +258,8 @@ fun SafetyAlertsPanel(
                             }
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text("Safe Zone Boundary", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
-                                Text("Active 500m Home Geofence", fontSize = 11.sp, color = IosColors.LabelSecondary)
+                                Text(MultilingualManager.tr("safety_geofence_title", selectedLanguageCode), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+                                Text(MultilingualManager.tr("safety_geofence_sub", selectedLanguageCode), fontSize = 11.sp, color = IosColors.LabelSecondary)
                             }
                         }
 
@@ -270,14 +270,14 @@ fun SafetyAlertsPanel(
                                 .background(GoogleColors.Green.copy(alpha = 0.15f))
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text("â— SECURE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = GoogleColors.Green)
+                            Text("● SECURE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = GoogleColors.Green)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Your GPS location is being continuously monitored by your family guardian. If you step outside your designated boundary, your family is alerted immediately.",
+                        text = MultilingualManager.tr("safety_geofence_desc", selectedLanguageCode),
                         fontSize = 12.sp,
                         color = IosColors.LabelSecondary,
                         lineHeight = 17.sp
@@ -308,7 +308,7 @@ fun SafetyAlertsPanel(
                             Icon(Icons.Default.MedicalServices, contentDescription = null, tint = GoogleColors.Red, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Emergency Medical ID",
+                                text = MultilingualManager.tr("safety_med_id", selectedLanguageCode),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = IosColors.LabelPrimary
@@ -331,7 +331,7 @@ fun SafetyAlertsPanel(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Patient Name:", fontSize = 13.sp, color = IosColors.LabelSecondary)
+                        Text(MultilingualManager.tr("safety_patient_name", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
                         Text(patientName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
                     }
 
@@ -342,8 +342,8 @@ fun SafetyAlertsPanel(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Condition:", fontSize = 13.sp, color = IosColors.LabelSecondary)
-                        Text("Memory & Alzheimer's Care Assistance", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = GoogleColors.Yellow)
+                        Text(MultilingualManager.tr("safety_condition", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
+                        Text(MultilingualManager.tr("safety_condition_desc", selectedLanguageCode), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = GoogleColors.Yellow)
                     }
 
                     // Primary Caregiver
@@ -353,9 +353,9 @@ fun SafetyAlertsPanel(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Caregiver:", fontSize = 13.sp, color = IosColors.LabelSecondary)
+                        Text(MultilingualManager.tr("safety_caregiver", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
                         Text(
-                            text = if (caregiverPhone.isNotBlank()) "$caregiverName ($caregiverPhone)" else "$caregiverName (Tap âœï¸ to add)",
+                            text = if (caregiverPhone.isNotBlank()) "$caregiverName ($caregiverPhone)" else "$caregiverName (Tap ✏️ to add)",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (caregiverPhone.isNotBlank()) GoogleColors.Green else GoogleColors.Blue
@@ -370,7 +370,7 @@ fun SafetyAlertsPanel(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Home Address:", fontSize = 13.sp, color = IosColors.LabelSecondary)
+                        Text(MultilingualManager.tr("safety_address", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = if (hasHomeSet) homeAddress.ifBlank { "GPS Coordinates Saved" } else "Not configured",
@@ -380,7 +380,7 @@ fun SafetyAlertsPanel(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "ðŸ“ Set",
+                                text = "📍 Set",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = GoogleColors.Blue,
@@ -406,7 +406,7 @@ fun SafetyAlertsPanel(
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
                     Text(
-                        text = "Daily Wellness Checklist",
+                        text = MultilingualManager.tr("safety_wellness", selectedLanguageCode),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = IosColors.LabelPrimary
@@ -429,8 +429,8 @@ fun SafetyAlertsPanel(
                             Icon(Icons.Default.Medication, contentDescription = null, tint = GoogleColors.Red, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text("Daily Medication", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = IosColors.LabelPrimary)
-                                Text(if (medTaken) "Taken today âœ“" else "Tap to mark taken", fontSize = 11.sp, color = if (medTaken) GoogleColors.Green else IosColors.LabelSecondary)
+                                Text(MultilingualManager.tr("safety_meds", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = IosColors.LabelPrimary)
+                                Text(if (medTaken) "Taken today ✓" else "Tap to mark taken", fontSize = 11.sp, color = if (medTaken) GoogleColors.Green else IosColors.LabelSecondary)
                             }
                         }
                         Icon(
@@ -457,8 +457,8 @@ fun SafetyAlertsPanel(
                             Icon(Icons.Default.WaterDrop, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text("Hydration Check", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = IosColors.LabelPrimary)
-                                Text(if (waterTaken) "Drank water âœ“" else "Tap to mark completed", fontSize = 11.sp, color = if (waterTaken) GoogleColors.Green else IosColors.LabelSecondary)
+                                Text(MultilingualManager.tr("safety_hydration", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = IosColors.LabelPrimary)
+                                Text(if (waterTaken) "Drank water ✓" else "Tap to mark completed", fontSize = 11.sp, color = if (waterTaken) GoogleColors.Green else IosColors.LabelSecondary)
                             }
                         }
                         Icon(
@@ -474,7 +474,10 @@ fun SafetyAlertsPanel(
         }
 
         // Apple iOS Assistive Access Back Button
-        IosBackPillButton(onClick = onBack)
+        IosBackPillButton(
+            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+            onClick = onBack
+        )
     }
 
     // Edit Emergency Info & Home Location Dialog
@@ -488,7 +491,7 @@ fun SafetyAlertsPanel(
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
             title = {
-                Text("Emergency Contact & Home Safe Location", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = IosColors.LabelPrimary)
+                Text(MultilingualManager.tr("safety_dialog_title", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = IosColors.LabelPrimary)
             },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -501,7 +504,7 @@ fun SafetyAlertsPanel(
                     OutlinedTextField(
                         value = tempName,
                         onValueChange = { tempName = it },
-                        label = { Text("Caregiver Name") },
+                        label = { Text(MultilingualManager.tr("safety_caregiver_name", selectedLanguageCode)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -509,7 +512,7 @@ fun SafetyAlertsPanel(
                     OutlinedTextField(
                         value = tempPhone,
                         onValueChange = { tempPhone = it },
-                        label = { Text("Caregiver Phone Number") },
+                        label = { Text(MultilingualManager.tr("safety_caregiver_phone", selectedLanguageCode)) },
                         placeholder = { Text("+91 9876543210") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
@@ -527,7 +530,7 @@ fun SafetyAlertsPanel(
                             tempLat = 0.0
                             tempLon = 0.0
                         },
-                        label = { Text("Home Street Address or Landmark") },
+                        label = { Text(MultilingualManager.tr("safety_home_address_label", selectedLanguageCode)) },
                         placeholder = { Text("e.g. 24 Indiranagar 100ft Rd, Bengaluru") },
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 2
@@ -596,7 +599,7 @@ fun SafetyAlertsPanel(
             },
             dismissButton = {
                 TextButton(onClick = { showEditDialog = false }) {
-                    Text("Cancel", color = IosColors.LabelSecondary)
+                    Text(MultilingualManager.tr("mv_cancel", selectedLanguageCode), color = IosColors.LabelSecondary)
                 }
             }
         )

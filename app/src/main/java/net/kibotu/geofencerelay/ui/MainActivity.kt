@@ -30,22 +30,29 @@ class MainActivity : ComponentActivity() {
                 val flavor = BuildConfig.FLAVOR
 
                 var currentScreen by remember {
+                    val isDeviceRemembered = prefs.getBoolean("is_device_remembered", false) || prefs.getBoolean("is_device_authenticated", false)
                     val savedEmail = prefs.getString("user_google_email", null)
                     val initialScreen: AppScreen = when (flavor) {
                         "tracker" -> {
-                            if (!savedEmail.isNullOrBlank()) AppScreen.Tracker(savedEmail)
-                            else AppScreen.Auth(isTracker = true)
+                            if (isDeviceRemembered || !savedEmail.isNullOrBlank()) {
+                                AppScreen.Tracker(savedEmail ?: "patient.device@smaran.local")
+                            } else {
+                                AppScreen.Auth(isTracker = true)
+                            }
                         }
                         "guardian" -> {
-                            if (!savedEmail.isNullOrBlank()) AppScreen.Guardian(savedEmail)
-                            else AppScreen.Auth(isTracker = false)
+                            if (isDeviceRemembered || !savedEmail.isNullOrBlank()) {
+                                AppScreen.Guardian(savedEmail ?: "guardian.device@smaran.local")
+                            } else {
+                                AppScreen.Auth(isTracker = false)
+                            }
                         }
                         else -> {
                             val savedRole = prefs.getString("user_role", null)
-                            if (!savedEmail.isNullOrBlank() && savedRole == "tracker") {
-                                AppScreen.Tracker(savedEmail)
-                            } else if (!savedEmail.isNullOrBlank() && savedRole == "guardian") {
-                                AppScreen.Guardian(savedEmail)
+                            if ((isDeviceRemembered || !savedEmail.isNullOrBlank()) && savedRole == "guardian") {
+                                AppScreen.Guardian(savedEmail ?: "guardian.device@smaran.local")
+                            } else if (isDeviceRemembered || !savedEmail.isNullOrBlank()) {
+                                AppScreen.Tracker(savedEmail ?: "patient.device@smaran.local")
                             } else {
                                 AppScreen.RoleSelect
                             }
@@ -58,19 +65,21 @@ class MainActivity : ComponentActivity() {
                     is AppScreen.RoleSelect -> {
                         HomeScreen(
                             onSelectGuardian = {
-                                prefs.edit().putString("user_role", "guardian").apply()
+                                prefs.edit().putString("user_role", "guardian").commit()
+                                val isDeviceRemembered = prefs.getBoolean("is_device_remembered", false)
                                 val savedEmail = prefs.getString("user_google_email", null)
-                                currentScreen = if (!savedEmail.isNullOrBlank()) {
-                                    AppScreen.Guardian(savedEmail)
+                                currentScreen = if (isDeviceRemembered || !savedEmail.isNullOrBlank()) {
+                                    AppScreen.Guardian(savedEmail ?: "guardian.device@smaran.local")
                                 } else {
                                     AppScreen.Auth(isTracker = false)
                                 }
                             },
                             onSelectTracker = {
-                                prefs.edit().putString("user_role", "tracker").apply()
+                                prefs.edit().putString("user_role", "tracker").commit()
+                                val isDeviceRemembered = prefs.getBoolean("is_device_remembered", false)
                                 val savedEmail = prefs.getString("user_google_email", null)
-                                currentScreen = if (!savedEmail.isNullOrBlank()) {
-                                    AppScreen.Tracker(savedEmail)
+                                currentScreen = if (isDeviceRemembered || !savedEmail.isNullOrBlank()) {
+                                    AppScreen.Tracker(savedEmail ?: "patient.device@smaran.local")
                                 } else {
                                     AppScreen.Auth(isTracker = true)
                                 }
@@ -87,7 +96,12 @@ class MainActivity : ComponentActivity() {
                                 "Caregiver Guardian Console\nLive Patient Radar & Cognitive Health Monitoring",
                             isTrackerMode = isTracker,
                             onSignInSuccess = { email ->
-                                prefs.edit().putString("user_google_email", email).apply()
+                                prefs.edit()
+                                    .putBoolean("is_device_remembered", true)
+                                    .putBoolean("is_device_authenticated", true)
+                                    .putString("user_google_email", email)
+                                    .putString("user_role", if (isTracker) "tracker" else "guardian")
+                                    .commit()
                                 currentScreen = if (isTracker) AppScreen.Tracker(email) else AppScreen.Guardian(email)
                             }
                         )
@@ -110,7 +124,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onSignOut = {
-                                prefs.edit().clear().apply()
+                                prefs.edit().clear().commit()
                                 try {
                                     val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
                                         com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
@@ -139,7 +153,7 @@ class MainActivity : ComponentActivity() {
                             userEmail = screen.email,
                             initialDestination = initialDest,
                             onSignOut = {
-                                prefs.edit().clear().apply()
+                                prefs.edit().clear().commit()
                                 try {
                                     val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
                                         com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN

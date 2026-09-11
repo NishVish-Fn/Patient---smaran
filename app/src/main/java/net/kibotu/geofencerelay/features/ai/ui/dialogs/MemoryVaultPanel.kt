@@ -254,7 +254,7 @@ fun MemoryVaultPanel(
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.fillMaxWidth().height(46.dp)
                             ) {
-                                Text("Next Cherished Memory", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(MultilingualManager.tr("mv_next_memory", selectedLanguageCode), fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
                     }
@@ -305,7 +305,7 @@ fun MemoryVaultPanel(
                         Spacer(modifier = Modifier.height(18.dp))
 
                         Text(
-                            text = "Choose from 6 Default Themes:",
+                            text = MultilingualManager.tr("mv_default_themes", selectedLanguageCode),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = IosColors.LabelPrimary
@@ -338,7 +338,7 @@ fun MemoryVaultPanel(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Add First Family Memory", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
+                            Text(MultilingualManager.tr("mv_add_first", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
                         }
                     }
                 }
@@ -348,11 +348,15 @@ fun MemoryVaultPanel(
         }
 
         // Apple iOS Assistive Access Back Button
-        IosBackPillButton(onClick = onBack)
+        IosBackPillButton(
+            label = MultilingualManager.tr("btn_back", selectedLanguageCode),
+            onClick = onBack
+        )
 
         // Family Custom Memory Upload Dialog
         if (showAddDialog) {
             FamilyAddMemoryDialog(
+                selectedLanguageCode = selectedLanguageCode,
                 onDismiss = { showAddDialog = false },
                 onSave = { newCard ->
                     ReminiscenceManager.saveCustomCard(context, newCard)
@@ -367,6 +371,7 @@ fun MemoryVaultPanel(
 
 @Composable
 private fun FamilyAddMemoryDialog(
+    selectedLanguageCode: String = "en",
     onDismiss: () -> Unit,
     onSave: (MemoryCard) -> Unit
 ) {
@@ -395,7 +400,7 @@ private fun FamilyAddMemoryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Upload Family Memory Question", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = IosColors.LabelPrimary)
+            Text(MultilingualManager.tr("mv_upload_title", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 17.sp, color = IosColors.LabelPrimary)
         },
         text = {
             Column(
@@ -403,7 +408,7 @@ private fun FamilyAddMemoryDialog(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                Text("Select Default Theme:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+                Text(MultilingualManager.tr("mv_select_theme", selectedLanguageCode), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
                 Spacer(modifier = Modifier.height(6.dp))
 
                 // Theme Chips
@@ -437,8 +442,8 @@ private fun FamilyAddMemoryDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Memory Title") },
-                    placeholder = { Text("e.g. Grandma's Favorite Dish", color = Color.Gray) },
+                    label = { Text(MultilingualManager.tr("mv_title_label", selectedLanguageCode)) },
+                    placeholder = { Text(MultilingualManager.tr("mv_title_hint", selectedLanguageCode), color = Color.Gray) },
                     singleLine = true,
                     colors = tfColors,
                     modifier = Modifier.fillMaxWidth()
@@ -449,8 +454,8 @@ private fun FamilyAddMemoryDialog(
                 OutlinedTextField(
                     value = question,
                     onValueChange = { question = it },
-                    label = { Text("Memory Question") },
-                    placeholder = { Text("e.g. Which spice does Grandma add to tea?", color = Color.Gray) },
+                    label = { Text(MultilingualManager.tr("mv_question_label", selectedLanguageCode)) },
+                    placeholder = { Text(MultilingualManager.tr("mv_question_hint", selectedLanguageCode), color = Color.Gray) },
                     colors = tfColors,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -460,15 +465,15 @@ private fun FamilyAddMemoryDialog(
                 OutlinedTextField(
                     value = hint,
                     onValueChange = { hint = it },
-                    label = { Text("Helpful Hint / Cue") },
-                    placeholder = { Text("e.g. Fresh green leaves from garden", color = Color.Gray) },
+                    label = { Text(MultilingualManager.tr("mv_cue_label", selectedLanguageCode)) },
+                    placeholder = { Text(MultilingualManager.tr("mv_cue_hint", selectedLanguageCode), color = Color.Gray) },
                     colors = tfColors,
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text("Multiple Choice Options (Select correct answer):", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+                Text(MultilingualManager.tr("mv_options_title", selectedLanguageCode), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
                 Spacer(modifier = Modifier.height(6.dp))
 
                 listOf(
@@ -524,12 +529,12 @@ private fun FamilyAddMemoryDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Save to Vault", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(MultilingualManager.tr("mv_save", selectedLanguageCode), color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = IosColors.LabelSecondary)
+                Text(MultilingualManager.tr("mv_cancel", selectedLanguageCode), color = IosColors.LabelSecondary)
             }
         },
         containerColor = Color.White,
