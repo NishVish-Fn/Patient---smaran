@@ -1,4 +1,4 @@
-package net.kibotu.geofencerelay.features.ai.ui.dialogs
+﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import android.Manifest
 import android.app.Activity
@@ -14,6 +14,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,19 +45,19 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
-import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
 import net.kibotu.geofencerelay.model.LocationPing
 import net.kibotu.geofencerelay.service.TrackerForegroundService
+import net.kibotu.geofencerelay.ui.theme.*
 import net.kibotu.geofencerelay.util.BatteryUtils
 import net.kibotu.geofencerelay.util.LocationUtils
 import java.util.Locale
 
 /**
  * Robust GPS Sentinel Beacon controller panel.
- * Features 1-tap permission resolution, Google Play Services GPS hardware enablement,
- * live satellite telemetry feed (coordinates, address, battery, speed), and authorized caregivers management.
+ * Adheres to the reference design kit:
+ * - Warm porcelain canvas and authentic woven ribbon banner
+ * - Tactile 24dp white cards and high-contrast Atkinson Hyperlegible typography
+ * - Live satellite telemetry feed (coordinates, address, battery, speed), and authorized caregivers management.
  */
 @Composable
 fun BeaconTrackerPanel(
@@ -119,34 +120,26 @@ fun BeaconTrackerPanel(
     var hasLocationPermission by remember { mutableStateOf(checkLocationPermission()) }
     var hasBackgroundPermission by remember { mutableStateOf(checkBackgroundPermission()) }
 
-    // Check system location/GPS hardware
-    val locationManager = remember { context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager }
+    val locationManager = remember {
+        context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    }
     var isGpsHardwareEnabled by remember {
-        mutableStateOf(locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true ||
-                locationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true)
+        mutableStateOf(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
     }
 
-    // Google Play Services Dialog Launcher to turn on GPS with 1 tap
-    val gpsResolutionLauncher = rememberLauncherForActivityResult(
+    val gpsEnableLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             isGpsHardwareEnabled = true
             TrackerForegroundService.start(context)
             isBroadcasting = true
-        } else {
-            isGpsHardwareEnabled = locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true ||
-                    locationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true
-            TrackerForegroundService.start(context)
-            isBroadcasting = true
         }
     }
 
     fun promptEnableGps(onGpsReady: () -> Unit) {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000L).build()
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
-            .setAlwaysShow(true)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L).build()
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest).setAlwaysShow(true)
         val client = LocationServices.getSettingsClient(context)
         val task = client.checkLocationSettings(builder.build())
 
@@ -157,13 +150,13 @@ fun BeaconTrackerPanel(
         task.addOnFailureListener { exception ->
             if (exception is ResolvableApiException) {
                 try {
-                    val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution.intentSender).build()
-                    gpsResolutionLauncher.launch(intentSenderRequest)
+                    val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
+                    gpsEnableLauncher.launch(intentSenderRequest)
                 } catch (_: Exception) {
-                    onGpsReady()
+                    context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 }
             } else {
-                onGpsReady()
+                context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
             }
         }
     }
@@ -171,20 +164,23 @@ fun BeaconTrackerPanel(
     val backgroundPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        hasBackgroundPermission = granted || checkBackgroundPermission()
-        promptEnableGps {
-            TrackerForegroundService.start(context)
-            isBroadcasting = true
+        hasBackgroundPermission = granted
+        if (!granted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+            }
+            context.startActivity(intent)
         }
     }
 
     val fineLocationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val granted = (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) ||
-                (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
-        hasLocationPermission = granted || checkLocationPermission()
-        if (granted) {
+    ) { perms ->
+        val fineGranted = perms[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val coarseGranted = perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        hasLocationPermission = fineGranted || coarseGranted
+
+        if (hasLocationPermission) {
             promptEnableGps {
                 TrackerForegroundService.start(context)
                 isBroadcasting = true
@@ -225,11 +221,22 @@ fun BeaconTrackerPanel(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        // Top Authentic Woven Textile Ribbon
+        NerWovenRibbon(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            height = 14.dp,
+            primaryColor = NerColors.Secondary,
+            secondaryColor = NerColors.Primary,
+            accentColor = NerColors.Marigold
+        )
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -238,15 +245,15 @@ fun BeaconTrackerPanel(
         ) {
             Text(
                 text = MultilingualManager.tr("beacon_title", selectedLanguageCode),
-                fontSize = 26.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = MultilingualManager.tr("beacon_subtitle", selectedLanguageCode),
                 fontSize = 13.sp,
-                color = IosColors.LabelSecondary,
+                color = NerColors.NeutralMedium,
                 textAlign = TextAlign.Center
             )
 
@@ -259,21 +266,26 @@ fun BeaconTrackerPanel(
                         .fillMaxWidth()
                         .padding(bottom = 10.dp)
                         .clickable { promptEnableGps { isGpsHardwareEnabled = true } },
-                    colors = CardDefaults.cardColors(containerColor = GoogleColors.Yellow.copy(alpha = 0.15f)),
-                    shape = RoundedCornerShape(14.dp),
-                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(GoogleColors.Yellow))
+                    colors = CardDefaults.cardColors(containerColor = NerColors.MarigoldTint),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, NerColors.Marigold)
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.LocationOff, contentDescription = null, tint = GoogleColors.Yellow, modifier = Modifier.size(22.dp))
+                        Icon(Icons.Default.LocationOff, contentDescription = null, tint = NerColors.PrimaryDark, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(MultilingualManager.tr("btn_turn_on_gps", selectedLanguageCode), fontWeight = FontWeight.Bold, color = GoogleColors.Yellow, fontSize = 13.sp)
-                            Text("Tap here to turn on Google High-Accuracy GPS with one tap.", color = IosColors.LabelSecondary, fontSize = 11.sp)
+                            Text(
+                                MultilingualManager.tr("btn_turn_on_gps", selectedLanguageCode),
+                                fontWeight = FontWeight.Bold,
+                                color = NerColors.PrimaryDark,
+                                fontSize = 14.sp
+                            )
+                            Text("Tap here to turn on Google High-Accuracy GPS with one tap.", color = NerColors.NeutralMedium, fontSize = 11.sp)
                         }
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = GoogleColors.Yellow)
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = NerColors.PrimaryDark)
                     }
                 }
             }
@@ -285,49 +297,50 @@ fun BeaconTrackerPanel(
                         .fillMaxWidth()
                         .padding(bottom = 10.dp)
                         .clickable { showBackgroundPermissionDialog = true },
-                    colors = CardDefaults.cardColors(containerColor = GoogleColors.Blue.copy(alpha = 0.15f)),
-                    shape = RoundedCornerShape(14.dp),
-                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(GoogleColors.Blue))
+                    colors = CardDefaults.cardColors(containerColor = NerColors.TertiaryTint),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, NerColors.Tertiary)
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(22.dp))
+                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = NerColors.Tertiary, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Background Permission Needed", fontWeight = FontWeight.Bold, color = GoogleColors.Blue, fontSize = 13.sp)
-                            Text("Tap to set 'Allow all the time' for continuous 24/7 tracking.", color = IosColors.LabelSecondary, fontSize = 11.sp)
+                            Text("Background Permission Needed", fontWeight = FontWeight.Bold, color = NerColors.Tertiary, fontSize = 14.sp)
+                            Text("Tap to set 'Allow all the time' for continuous 24/7 tracking.", color = NerColors.NeutralMedium, fontSize = 11.sp)
                         }
-                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = GoogleColors.Blue)
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = NerColors.Tertiary)
                     }
                 }
             } else if (hasBackgroundPermission) {
                 Row(
                     modifier = Modifier
                         .padding(bottom = 10.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(GoogleColors.Green.copy(alpha = 0.15f))
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                        .clip(RoundedCornerShape(percent = 50))
+                        .background(NerColors.SecondaryTint)
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = GoogleColors.Green, modifier = Modifier.size(15.dp))
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = NerColors.Secondary, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Background Location: Allowed All the Time", fontSize = 11.sp, color = GoogleColors.Green, fontWeight = FontWeight.SemiBold)
+                    Text("Background Location: Allowed All the Time", fontSize = 12.sp, color = NerColors.SecondaryDark, fontWeight = FontWeight.SemiBold)
                 }
             }
 
             // Main Radar Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                border = BorderStroke(1.dp, NerColors.NeutralBorder)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(100.dp)) {
@@ -337,20 +350,20 @@ fun BeaconTrackerPanel(
                                     .size(100.dp)
                                     .scale(pulseScale)
                                     .clip(CircleShape)
-                                    .background(GoogleColors.Green.copy(alpha = pulseAlpha))
+                                    .background(NerColors.Secondary.copy(alpha = pulseAlpha))
                             )
                         }
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(CircleShape)
-                                .background(if (isBroadcasting) GoogleColors.Green else IosColors.CameraIconBg),
+                                .background(if (isBroadcasting) NerColors.Secondary else NerColors.NeutralSoft),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = if (isBroadcasting) Icons.Default.Sensors else Icons.Default.SensorsOff,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = if (isBroadcasting) Color.White else NerColors.NeutralMedium,
                                 modifier = Modifier.size(36.dp)
                             )
                         }
@@ -362,7 +375,7 @@ fun BeaconTrackerPanel(
                         text = if (isBroadcasting) MultilingualManager.tr("btn_stop_broadcast", selectedLanguageCode).uppercase() else "BROADCAST PAUSED",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isBroadcasting) GoogleColors.Green else IosColors.LabelSecondary
+                        color = if (isBroadcasting) NerColors.SecondaryDark else NerColors.NeutralMedium
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -373,14 +386,30 @@ fun BeaconTrackerPanel(
                         else
                             "Tap below to begin sending background GPS coordinates",
                         fontSize = 12.sp,
-                        color = IosColors.LabelSecondary,
+                        color = NerColors.NeutralMedium,
                         textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.height(18.dp))
 
-                    // Primary Action Button (Safely requests permissions if missing, prompts GPS, starts FGS)
-                    Button(
+                    // Primary Action Pill Button
+                    NerPillButton(
+                        text = when {
+                            isBroadcasting -> MultilingualManager.tr("btn_stop_broadcast", selectedLanguageCode)
+                            !hasLocationPermission -> MultilingualManager.tr("btn_grant_perms", selectedLanguageCode)
+                            else -> MultilingualManager.tr("btn_start_broadcast", selectedLanguageCode)
+                        },
+                        icon = when {
+                            isBroadcasting -> Icons.Default.Stop
+                            !hasLocationPermission -> Icons.Default.Security
+                            else -> Icons.Default.PlayArrow
+                        },
+                        hierarchy = NerButtonHierarchy.Primary,
+                        containerColor = when {
+                            isBroadcasting -> NerColors.Crimson
+                            !hasLocationPermission -> NerColors.Tertiary
+                            else -> NerColors.Secondary
+                        },
                         onClick = {
                             if (isBroadcasting) {
                                 TrackerForegroundService.stop(context)
@@ -407,76 +436,47 @@ fun BeaconTrackerPanel(
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = when {
-                                isBroadcasting -> GoogleColors.Red
-                                !hasLocationPermission -> GoogleColors.Blue
-                                else -> GoogleColors.Green
-                            }
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = when {
-                                    isBroadcasting -> Icons.Default.Stop
-                                    !hasLocationPermission -> Icons.Default.Security
-                                    else -> Icons.Default.PlayArrow
-                                },
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = when {
-                                    isBroadcasting -> MultilingualManager.tr("btn_stop_broadcast", selectedLanguageCode)
-                                    !hasLocationPermission -> MultilingualManager.tr("btn_grant_perms", selectedLanguageCode)
-                                    else -> MultilingualManager.tr("btn_start_broadcast", selectedLanguageCode)
-                                },
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = Color.White
-                            )
-                        }
-                    }
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Live Telemetry Fix Card (Coordinates, Address, Battery, Speed - restored like before today)
+            // Live Telemetry Fix Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                border = BorderStroke(1.dp, NerColors.NeutralBorder)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.MyLocation, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.MyLocation, contentDescription = null, tint = NerColors.Tertiary, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = MultilingualManager.tr("lbl_coordinates", selectedLanguageCode),
-                                fontSize = 15.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = IosColors.LabelPrimary
+                                color = NerColors.Charcoal
                             )
                         }
                         if (isBroadcasting) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(GoogleColors.Green))
+                                Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(NerColors.Secondary))
                                 Spacer(modifier = Modifier.width(5.dp))
-                                Text(MultilingualManager.tr("beacon_live_badge", selectedLanguageCode), fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = GoogleColors.Green)
+                                Text(
+                                    MultilingualManager.tr("beacon_live_badge", selectedLanguageCode),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = NerColors.SecondaryDark
+                                )
                             }
                         }
                     }
@@ -486,37 +486,45 @@ fun BeaconTrackerPanel(
                     val ping = latestPing
                     if (ping != null) {
                         Text(
-                            text = "📍 ${ping.address}",
+                            text = "ðŸ“ ${ping.address}",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = IosColors.LabelPrimary
+                            color = NerColors.Charcoal
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = String.format(Locale.US, "GPS: %.5f, %.5f (±%dm)", ping.latitude, ping.longitude, ping.accuracy.toInt()),
+                            text = String.format(Locale.US, "GPS: %.5f, %.5f (Â±%dm)", ping.latitude, ping.longitude, ping.accuracy.toInt()),
                             fontSize = 12.sp,
-                            color = IosColors.LabelSecondary
+                            color = NerColors.NeutralMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 if (ping.isCharging) Icons.Default.BatteryChargingFull else Icons.Default.BatteryFull,
                                 contentDescription = null,
-                                tint = GoogleColors.Green,
-                                modifier = Modifier.size(15.dp)
+                                tint = NerColors.Secondary,
+                                modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("${MultilingualManager.tr("lbl_battery", selectedLanguageCode)}: ${ping.batteryLevel}%", fontSize = 12.sp, color = IosColors.LabelSecondary)
+                            Text(
+                                "${MultilingualManager.tr("lbl_battery", selectedLanguageCode)}: ${ping.batteryLevel}%",
+                                fontSize = 12.sp,
+                                color = NerColors.NeutralMedium
+                            )
                             Spacer(modifier = Modifier.width(14.dp))
-                            Icon(Icons.Default.Speed, contentDescription = null, tint = GoogleColors.Yellow, modifier = Modifier.size(15.dp))
+                            Icon(Icons.Default.Speed, contentDescription = null, tint = NerColors.Primary, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("${MultilingualManager.tr("lbl_speed", selectedLanguageCode)}: ${LocationUtils.formatSpeed(ping.speed)}", fontSize = 12.sp, color = IosColors.LabelSecondary)
+                            Text(
+                                "${MultilingualManager.tr("lbl_speed", selectedLanguageCode)}: ${LocationUtils.formatSpeed(ping.speed)}",
+                                fontSize = 12.sp,
+                                color = NerColors.NeutralMedium
+                            )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = "Last Broadcast: ${LocationUtils.formatTime(ping.timestamp)}",
                             fontSize = 11.sp,
-                            color = IosColors.LabelSecondary
+                            color = NerColors.NeutralMedium
                         )
                         if (ping.isBreach) {
                             Spacer(modifier = Modifier.height(8.dp))
@@ -524,15 +532,15 @@ fun BeaconTrackerPanel(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(GoogleColors.Red.copy(alpha = 0.15f))
+                                    .background(NerColors.CrimsonTint)
                                     .padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.Warning, contentDescription = null, tint = GoogleColors.Red, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Warning, contentDescription = null, tint = NerColors.Crimson, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = "${MultilingualManager.tr("status_breach", selectedLanguageCode)} (${LocationUtils.formatDistance(ping.distanceFromCenter)})",
-                                    color = GoogleColors.Red,
+                                    color = NerColors.Crimson,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -540,15 +548,15 @@ fun BeaconTrackerPanel(
                         }
                     } else if (isBroadcasting) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = GoogleColors.Blue)
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = NerColors.Tertiary)
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(MultilingualManager.tr("beacon_acquiring", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
+                            Text(MultilingualManager.tr("beacon_acquiring", selectedLanguageCode), fontSize = 13.sp, color = NerColors.NeutralMedium)
                         }
                     } else {
                         Text(
                             text = MultilingualManager.tr("beacon_start_hint", selectedLanguageCode),
                             fontSize = 12.sp,
-                            color = IosColors.LabelSecondary
+                            color = NerColors.NeutralMedium
                         )
                     }
                 }
@@ -559,20 +567,21 @@ fun BeaconTrackerPanel(
             // Hardware & Privacy Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                border = BorderStroke(1.dp, NerColors.NeutralBorder)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(18.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = GoogleColors.Blue)
+                        Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = NerColors.Tertiary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text(deviceName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = IosColors.LabelPrimary)
-                            Text("100% On-Device GPS Sentinel â€¢ Zero Cloud Tracking", fontSize = 11.sp, color = IosColors.LabelSecondary)
+                            Text(deviceName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = NerColors.Charcoal)
+                            Text("100% On-Device GPS Sentinel â€¢ Zero Cloud Tracking", fontSize = 11.sp, color = NerColors.NeutralMedium)
                         }
                     }
                 }
@@ -583,11 +592,12 @@ fun BeaconTrackerPanel(
             // Authorized Caregivers Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                border = BorderStroke(1.dp, NerColors.NeutralBorder)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(18.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -597,7 +607,7 @@ fun BeaconTrackerPanel(
                             "Authorized Caregivers (${authorizedEmails.size})",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = IosColors.LabelPrimary
+                            color = NerColors.Charcoal
                         )
 
                         IconButton(
@@ -607,9 +617,9 @@ fun BeaconTrackerPanel(
                                 showAddDialog = true
                             },
                             modifier = Modifier
-                                .size(32.dp)
+                                .size(34.dp)
                                 .clip(CircleShape)
-                                .background(GoogleColors.Blue)
+                                .background(NerColors.Primary)
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(18.dp))
                         }
@@ -623,22 +633,22 @@ fun BeaconTrackerPanel(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(IosColors.SystemGroupedBackground)
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(NerColors.NeutralSoft)
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(email, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = IosColors.LabelPrimary)
-                                Text(if (isSelf) "Owner (This Phone)" else "Authorized Guardian", fontSize = 10.sp, color = IosColors.LabelSecondary)
+                                Text(email, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = NerColors.Charcoal)
+                                Text(if (isSelf) "Owner (This Phone)" else "Authorized Guardian", fontSize = 10.sp, color = NerColors.NeutralMedium)
                             }
                             if (!isSelf) {
                                 IconButton(
                                     onClick = { saveEmails(authorizedEmails.filter { it != email }) },
                                     modifier = Modifier.size(24.dp)
                                 ) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Revoke", tint = GoogleColors.Red, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Delete, contentDescription = "Revoke", tint = NerColors.Crimson, modifier = Modifier.size(16.dp))
                                 }
                             }
                         }
@@ -649,7 +659,7 @@ fun BeaconTrackerPanel(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        // Apple iOS Assistive Access Back Button
+        // Accessible Bottom Back Pill
         IosBackPillButton(
             label = MultilingualManager.tr("btn_back", selectedLanguageCode),
             onClick = onBack
@@ -659,34 +669,36 @@ fun BeaconTrackerPanel(
         if (showBackgroundPermissionDialog) {
             AlertDialog(
                 onDismissRequest = { showBackgroundPermissionDialog = false },
-                title = { Text(MultilingualManager.tr("beacon_bg_perm_title", selectedLanguageCode), fontWeight = FontWeight.Bold) },
+                containerColor = NerColors.SurfaceWhite,
+                shape = RoundedCornerShape(24.dp),
+                title = { Text(MultilingualManager.tr("beacon_bg_perm_title", selectedLanguageCode), fontWeight = FontWeight.Bold, color = NerColors.Charcoal) },
                 text = {
                     Text(
                         MultilingualManager.tr("beacon_bg_perm_sub", selectedLanguageCode),
                         fontSize = 13.sp,
-                        color = Color.DarkGray
+                        color = NerColors.NeutralMedium
                     )
                 },
                 confirmButton = {
-                    Button(
+                    NerPillButton(
+                        text = MultilingualManager.tr("beacon_continue", selectedLanguageCode),
+                        hierarchy = NerButtonHierarchy.Primary,
+                        containerColor = NerColors.Tertiary,
                         onClick = {
                             showBackgroundPermissionDialog = false
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue)
-                    ) {
-                        Text(MultilingualManager.tr("beacon_continue", selectedLanguageCode), color = Color.White, fontWeight = FontWeight.Bold)
-                    }
+                        }
+                    )
                 },
                 dismissButton = {
-                    TextButton(onClick = { showBackgroundPermissionDialog = false }) {
-                        Text(MultilingualManager.tr("beacon_later", selectedLanguageCode), color = Color.Gray)
-                    }
-                },
-                containerColor = Color.White,
-                shape = RoundedCornerShape(20.dp)
+                    NerPillButton(
+                        text = MultilingualManager.tr("beacon_later", selectedLanguageCode),
+                        hierarchy = NerButtonHierarchy.Secondary,
+                        onClick = { showBackgroundPermissionDialog = false }
+                    )
+                }
             )
         }
 
@@ -694,10 +706,12 @@ fun BeaconTrackerPanel(
         if (showAddDialog) {
             AlertDialog(
                 onDismissRequest = { showAddDialog = false },
-                title = { Text("Grant Access to Caregiver", fontWeight = FontWeight.Bold) },
+                containerColor = NerColors.SurfaceWhite,
+                shape = RoundedCornerShape(24.dp),
+                title = { Text("Grant Access to Caregiver", fontWeight = FontWeight.Bold, color = NerColors.Charcoal) },
                 text = {
                     Column {
-                        Text("Enter Google Account email of your family or caregiver:", fontSize = 12.sp, color = IosColors.LabelSecondary)
+                        Text("Enter Google Account email of your family or caregiver:", fontSize = 12.sp, color = NerColors.NeutralMedium)
                         Spacer(modifier = Modifier.height(8.dp))
                         OutlinedTextField(
                             value = newEmailInput,
@@ -707,24 +721,18 @@ fun BeaconTrackerPanel(
                             },
                             placeholder = { Text("caregiver@gmail.com", color = Color.Gray) },
                             isError = emailError != null,
-                            supportingText = emailError?.let { { Text(it, color = GoogleColors.Red) } },
+                            supportingText = emailError?.let { { Text(it, color = NerColors.Crimson) } },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.Black,
-                                unfocusedTextColor = Color.Black,
-                                focusedContainerColor = Color(0xFFF2F2F7),
-                                unfocusedContainerColor = Color(0xFFF2F2F7),
-                                focusedBorderColor = GoogleColors.Blue,
-                                unfocusedBorderColor = IosColors.CardBorder,
-                                cursorColor = GoogleColors.Blue
-                            )
+                            shape = RoundedCornerShape(14.dp)
                         )
                     }
                 },
                 confirmButton = {
-                    Button(
+                    NerPillButton(
+                        text = "Add Caregiver",
+                        hierarchy = NerButtonHierarchy.Primary,
+                        containerColor = NerColors.Primary,
                         onClick = {
                             val clean = newEmailInput.trim().lowercase()
                             if (!clean.contains("@") || !clean.contains(".")) {
@@ -735,20 +743,16 @@ fun BeaconTrackerPanel(
                                 saveEmails(authorizedEmails + clean)
                                 showAddDialog = false
                             }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text("Add Caregiver", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
+                        }
+                    )
                 },
                 dismissButton = {
-                    TextButton(onClick = { showAddDialog = false }) {
-                        Text("Cancel", color = IosColors.LabelSecondary)
-                    }
-                },
-                containerColor = Color.White,
-                shape = RoundedCornerShape(20.dp)
+                    NerPillButton(
+                        text = "Cancel",
+                        hierarchy = NerButtonHierarchy.Secondary,
+                        onClick = { showAddDialog = false }
+                    )
+                }
             )
         }
     }

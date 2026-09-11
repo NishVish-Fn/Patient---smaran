@@ -1,5 +1,6 @@
-package net.kibotu.geofencerelay.features.ai.ui.dialogs
+﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,13 +27,14 @@ import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.reminiscence.MemoryCard
 import net.kibotu.geofencerelay.features.ai.reminiscence.ReminiscenceManager
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
-import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
+import net.kibotu.geofencerelay.ui.theme.*
 
 /**
- * Apple iOS Photos-styled Reminiscence Memory Vault.
- * Provides autobiographical memory recall cards and allows family members to upload custom questions.
+ * Reminiscence Memory Vault.
+ * Adheres to the reference design kit:
+ * - Warm porcelain canvas and authentic woven ribbon banner
+ * - Tactile 24dp white cards and high-contrast Atkinson Hyperlegible typography
+ * - Autobiographical memory recall cards with family question uploads.
  */
 @Composable
 fun MemoryVaultPanel(
@@ -51,11 +53,22 @@ fun MemoryVaultPanel(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        // Top Authentic Woven Textile Ribbon
+        NerWovenRibbon(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            height = 14.dp,
+            primaryColor = NerColors.PlumMaroon,
+            secondaryColor = NerColors.Primary,
+            accentColor = NerColors.Marigold
+        )
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -72,26 +85,24 @@ fun MemoryVaultPanel(
                         text = MultilingualManager.tr("memory_title", selectedLanguageCode),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = IosColors.LabelPrimary
+                        color = NerColors.Charcoal
                     )
                     Text(
                         text = MultilingualManager.tr("memory_subtitle", selectedLanguageCode),
                         fontSize = 12.sp,
-                        color = IosColors.LabelSecondary
+                        color = NerColors.NeutralMedium
                     )
                 }
 
                 // Family Upload Question Button
-                Button(
-                    onClick = { showAddDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(MultilingualManager.tr("btn_add_memory", selectedLanguageCode), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                }
+                NerPillButton(
+                    text = MultilingualManager.tr("btn_add_memory", selectedLanguageCode),
+                    icon = Icons.Default.Add,
+                    hierarchy = NerButtonHierarchy.Primary,
+                    containerColor = NerColors.Primary,
+                    fontSize = 13.sp,
+                    onClick = { showAddDialog = true }
+                )
             }
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -100,32 +111,33 @@ fun MemoryVaultPanel(
                 // Main Memory Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                    colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, NerColors.NeutralBorder)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
+                            .padding(22.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Category Badge
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(IosDimensions.PillCornerRadius))
-                                .background(IosColors.SystemIndigo.copy(alpha = 0.12f))
-                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                                .clip(RoundedCornerShape(percent = 50))
+                                .background(NerColors.PlumTint)
+                                .padding(horizontal = 14.dp, vertical = 5.dp)
                         ) {
                             Text(
                                 text = "${currentCard.iconEmoji} ${currentCard.category}",
-                                color = IosColors.SystemIndigo,
-                                fontSize = 11.sp,
+                                color = NerColors.PlumMaroon,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
                             text = currentCard.iconEmoji,
@@ -136,40 +148,40 @@ fun MemoryVaultPanel(
 
                         Text(
                             text = currentCard.title,
-                            fontSize = 18.sp,
+                            fontSize = 19.sp,
                             fontWeight = FontWeight.Bold,
-                            color = IosColors.LabelPrimary
+                            color = NerColors.Charcoal
                         )
 
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
                             text = currentCard.question,
-                            fontSize = 14.sp,
-                            color = IosColors.LabelPrimary,
+                            fontSize = 15.sp,
+                            color = NerColors.Charcoal,
                             textAlign = TextAlign.Center,
-                            lineHeight = 20.sp
+                            lineHeight = 22.sp
                         )
 
                         if (currentCard.cueText.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(IosColors.SystemGroupedBackground)
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(NerColors.NeutralSoft)
+                                    .padding(horizontal = 14.dp, vertical = 10.dp)
                             ) {
                                 Text(
-                                    text = "💡 Clue: ${currentCard.cueText}",
-                                    fontSize = 12.sp,
-                                    color = IosColors.LabelSecondary,
-                                    lineHeight = 16.sp
+                                    text = "ðŸ’¡ Clue: ${currentCard.cueText}",
+                                    fontSize = 13.sp,
+                                    color = NerColors.NeutralMedium,
+                                    lineHeight = 18.sp
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
                         // 4 Answer Options
                         currentCard.options.forEachIndexed { optIdx, optText ->
@@ -178,17 +190,17 @@ fun MemoryVaultPanel(
                             val showFeedback = showAffirmation
 
                             val optBgColor = when {
-                                showFeedback && isCorrect -> GoogleColors.Green.copy(alpha = 0.2f)
-                                showFeedback && isSelected && !isCorrect -> GoogleColors.Red.copy(alpha = 0.15f)
-                                isSelected -> GoogleColors.Blue.copy(alpha = 0.15f)
-                                else -> IosColors.SystemGroupedBackground
+                                showFeedback && isCorrect -> NerColors.SecondaryTint
+                                showFeedback && isSelected && !isCorrect -> NerColors.CrimsonTint
+                                isSelected -> NerColors.PrimaryTint
+                                else -> NerColors.NeutralSoft
                             }
 
                             val optBorderColor = when {
-                                showFeedback && isCorrect -> GoogleColors.Green
-                                showFeedback && isSelected && !isCorrect -> GoogleColors.Red
-                                isSelected -> GoogleColors.Blue
-                                else -> IosColors.CardBorder
+                                showFeedback && isCorrect -> NerColors.Secondary
+                                showFeedback && isSelected && !isCorrect -> NerColors.Crimson
+                                isSelected -> NerColors.Primary
+                                else -> NerColors.NeutralBorder
                             }
 
                             Card(
@@ -199,31 +211,31 @@ fun MemoryVaultPanel(
                                         selectedOptionIndex = optIdx
                                         showAffirmation = true
                                     },
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(containerColor = optBgColor),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, optBorderColor)
+                                border = BorderStroke(1.dp, optBorderColor)
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                        .padding(horizontal = 16.dp, vertical = 14.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = "${('A' + optIdx)}.",
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        color = IosColors.LabelPrimary
+                                        fontSize = 15.sp,
+                                        color = NerColors.Charcoal
                                     )
-                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = optText,
-                                        fontSize = 13.sp,
-                                        color = IosColors.LabelPrimary,
+                                        fontSize = 14.sp,
+                                        color = NerColors.Charcoal,
                                         modifier = Modifier.weight(1f)
                                     )
                                     if (showFeedback && isCorrect) {
-                                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = GoogleColors.Green, modifier = Modifier.size(20.dp))
+                                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = NerColors.Secondary, modifier = Modifier.size(22.dp))
                                     }
                                 }
                             }
@@ -234,62 +246,62 @@ fun MemoryVaultPanel(
                             Spacer(modifier = Modifier.height(14.dp))
                             val wasCorrect = selectedOptionIndex == currentCard.correctIndex
                             Text(
-                                text = if (wasCorrect) "🎉 Wonderful memory! You remembered correctly."
-                                else "❤️ Beautiful memory. That's always close to our hearts.",
-                                fontSize = 13.sp,
+                                text = if (wasCorrect) "ðŸŽ‰ Wonderful memory! You remembered correctly."
+                                else "â¤ï¸ Beautiful memory. That's always close to our hearts.",
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (wasCorrect) GoogleColors.Green else GoogleColors.Blue,
+                                color = if (wasCorrect) NerColors.SecondaryDark else NerColors.PrimaryDark,
                                 textAlign = TextAlign.Center
                             )
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
 
-                            Button(
+                            NerPillButton(
+                                text = MultilingualManager.tr("mv_next_memory", selectedLanguageCode),
+                                hierarchy = NerButtonHierarchy.Primary,
+                                containerColor = NerColors.Primary,
                                 onClick = {
                                     selectedOptionIndex = null
                                     showAffirmation = false
                                     currentCardIndex = (currentCardIndex + 1) % cards.size
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth().height(46.dp)
-                            ) {
-                                Text(MultilingualManager.tr("mv_next_memory", selectedLanguageCode), fontWeight = FontWeight.Bold, color = Color.White)
-                            }
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
                 }
             } else {
-                // Empty State: Invite family members to add the first question from scratch!
+                // Empty State
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                    colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, NerColors.NeutralBorder)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
+                            .padding(26.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
+                                .size(76.dp)
                                 .clip(CircleShape)
-                                .background(GoogleColors.Blue.copy(alpha = 0.15f)),
+                                .background(NerColors.PrimaryTint),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("👨‍👩‍👧‍👦", fontSize = 38.sp)
+                            Text("ðŸ‘¨â€ðŸ‘©â€ðŸ‘§â€ðŸ‘¦", fontSize = 40.sp)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
                             text = MultilingualManager.tr("lbl_no_memories", selectedLanguageCode),
-                            fontSize = 18.sp,
+                            fontSize = 19.sp,
                             fontWeight = FontWeight.Bold,
-                            color = IosColors.LabelPrimary
+                            color = NerColors.Charcoal
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -297,18 +309,18 @@ fun MemoryVaultPanel(
                         Text(
                             text = MultilingualManager.tr("lbl_no_memories_desc", selectedLanguageCode),
                             fontSize = 13.sp,
-                            color = IosColors.LabelSecondary,
+                            color = NerColors.NeutralMedium,
                             textAlign = TextAlign.Center,
-                            lineHeight = 18.sp
+                            lineHeight = 19.sp
                         )
 
                         Spacer(modifier = Modifier.height(18.dp))
 
                         Text(
                             text = MultilingualManager.tr("mv_default_themes", selectedLanguageCode),
-                            fontSize = 13.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = IosColors.LabelPrimary
+                            color = NerColors.Charcoal
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -322,24 +334,20 @@ fun MemoryVaultPanel(
                             ) {
                                 Text(theme.second, fontSize = 20.sp)
                                 Spacer(modifier = Modifier.width(10.dp))
-                                Text(theme.first, fontSize = 13.sp, color = IosColors.LabelPrimary, fontWeight = FontWeight.Medium)
+                                Text(theme.first, fontSize = 13.sp, color = NerColors.Charcoal, fontWeight = FontWeight.Medium)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        Button(
+                        NerPillButton(
+                            text = MultilingualManager.tr("mv_add_first", selectedLanguageCode),
+                            icon = Icons.Default.Add,
+                            hierarchy = NerButtonHierarchy.Primary,
+                            containerColor = NerColors.Primary,
                             onClick = { showAddDialog = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
-                            shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(MultilingualManager.tr("mv_add_first", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
-                        }
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }
@@ -347,7 +355,7 @@ fun MemoryVaultPanel(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        // Apple iOS Assistive Access Back Button
+        // Accessible Bottom Back Pill
         IosBackPillButton(
             label = MultilingualManager.tr("btn_back", selectedLanguageCode),
             onClick = onBack
@@ -387,20 +395,17 @@ private fun FamilyAddMemoryDialog(
     var correctOptIdx by remember { mutableStateOf(0) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
 
-    val tfColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = Color.Black,
-        unfocusedTextColor = Color.Black,
-        focusedContainerColor = Color(0xFFF2F2F7),
-        unfocusedContainerColor = Color(0xFFF2F2F7),
-        focusedBorderColor = GoogleColors.Blue,
-        unfocusedBorderColor = IosColors.CardBorder,
-        cursorColor = GoogleColors.Blue
-    )
-
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = NerColors.SurfaceWhite,
+        shape = RoundedCornerShape(24.dp),
         title = {
-            Text(MultilingualManager.tr("mv_upload_title", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 17.sp, color = IosColors.LabelPrimary)
+            Text(
+                MultilingualManager.tr("mv_upload_title", selectedLanguageCode),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = NerColors.Charcoal
+            )
         },
         text = {
             Column(
@@ -408,7 +413,12 @@ private fun FamilyAddMemoryDialog(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                Text(MultilingualManager.tr("mv_select_theme", selectedLanguageCode), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+                Text(
+                    MultilingualManager.tr("mv_select_theme", selectedLanguageCode),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NerColors.Charcoal
+                )
                 Spacer(modifier = Modifier.height(6.dp))
 
                 // Theme Chips
@@ -419,19 +429,19 @@ private fun FamilyAddMemoryDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 2.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSel) GoogleColors.Blue.copy(alpha = 0.12f) else Color.Transparent)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (isSel) NerColors.PrimaryTint else Color.Transparent)
                                 .clickable { selectedThemeIdx = idx }
-                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(pair.second, fontSize = 16.sp)
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(pair.second, fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = pair.first,
-                                fontSize = 12.sp,
+                                fontSize = 13.sp,
                                 fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSel) GoogleColors.Blue else IosColors.LabelPrimary
+                                color = if (isSel) NerColors.PrimaryDark else NerColors.Charcoal
                             )
                         }
                     }
@@ -445,7 +455,7 @@ private fun FamilyAddMemoryDialog(
                     label = { Text(MultilingualManager.tr("mv_title_label", selectedLanguageCode)) },
                     placeholder = { Text(MultilingualManager.tr("mv_title_hint", selectedLanguageCode), color = Color.Gray) },
                     singleLine = true,
-                    colors = tfColors,
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -456,7 +466,7 @@ private fun FamilyAddMemoryDialog(
                     onValueChange = { question = it },
                     label = { Text(MultilingualManager.tr("mv_question_label", selectedLanguageCode)) },
                     placeholder = { Text(MultilingualManager.tr("mv_question_hint", selectedLanguageCode), color = Color.Gray) },
-                    colors = tfColors,
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -467,13 +477,18 @@ private fun FamilyAddMemoryDialog(
                     onValueChange = { hint = it },
                     label = { Text(MultilingualManager.tr("mv_cue_label", selectedLanguageCode)) },
                     placeholder = { Text(MultilingualManager.tr("mv_cue_hint", selectedLanguageCode), color = Color.Gray) },
-                    colors = tfColors,
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(MultilingualManager.tr("mv_options_title", selectedLanguageCode), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+                Text(
+                    MultilingualManager.tr("mv_options_title", selectedLanguageCode),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NerColors.Charcoal
+                )
                 Spacer(modifier = Modifier.height(6.dp))
 
                 listOf(
@@ -492,7 +507,7 @@ private fun FamilyAddMemoryDialog(
                             onValueChange = pair.second,
                             placeholder = { Text("Option ${i + 1}", color = Color.Gray) },
                             singleLine = true,
-                            colors = tfColors,
+                            shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -500,12 +515,15 @@ private fun FamilyAddMemoryDialog(
 
                 if (errorMsg != null) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(errorMsg!!, color = IosColors.SystemRed, fontSize = 11.sp)
+                    Text(errorMsg!!, color = NerColors.Crimson, fontSize = 12.sp)
                 }
             }
         },
         confirmButton = {
-            Button(
+            NerPillButton(
+                text = MultilingualManager.tr("mv_save", selectedLanguageCode),
+                hierarchy = NerButtonHierarchy.Primary,
+                containerColor = NerColors.Primary,
                 onClick = {
                     if (title.isBlank() || question.isBlank() || opt1.isBlank() || opt2.isBlank()) {
                         errorMsg = "Please fill in title, question, and at least 2 options."
@@ -525,19 +543,15 @@ private fun FamilyAddMemoryDialog(
                         )
                         onSave(card)
                     }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text(MultilingualManager.tr("mv_save", selectedLanguageCode), color = Color.White, fontWeight = FontWeight.Bold)
-            }
+                }
+            )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(MultilingualManager.tr("mv_cancel", selectedLanguageCode), color = IosColors.LabelSecondary)
-            }
-        },
-        containerColor = Color.White,
-        shape = RoundedCornerShape(20.dp)
+            NerPillButton(
+                text = MultilingualManager.tr("mv_cancel", selectedLanguageCode),
+                hierarchy = NerButtonHierarchy.Secondary,
+                onClick = onDismiss
+            )
+        }
     )
 }

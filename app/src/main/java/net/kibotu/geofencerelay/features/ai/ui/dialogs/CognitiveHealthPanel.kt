@@ -1,5 +1,6 @@
 package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -23,12 +24,14 @@ import androidx.compose.ui.unit.sp
 import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.model.CpsAssessmentResult
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
+import net.kibotu.geofencerelay.ui.theme.*
 
 /**
- * Apple iOS Health-styled Cognitive Assessment Dashboard.
- * Accurately displays unassessed state if no games have been played yet today.
+ * Vibrant Cognitive Assessment Dashboard.
+ * Adheres directly to the reference design kit:
+ * - Warm porcelain canvas and authentic woven ribbon banner
+ * - Tactile 24dp white cards and Atkinson Hyperlegible typography
+ * - Multi-tier progress bars for sub-domains (Orange, Green, Blue, Plum)
  */
 @Composable
 fun CognitiveHealthPanel(
@@ -40,11 +43,22 @@ fun CognitiveHealthPanel(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        // Top Authentic Woven Textile Ribbon
+        NerWovenRibbon(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            height = 14.dp,
+            primaryColor = NerColors.Tertiary,
+            secondaryColor = NerColors.Primary,
+            accentColor = NerColors.Marigold
+        )
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -53,55 +67,57 @@ fun CognitiveHealthPanel(
         ) {
             Text(
                 text = MultilingualManager.tr("tile_score_title", selectedLanguageCode),
-                fontSize = 26.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = MultilingualManager.tr("health_subtitle", selectedLanguageCode),
                 fontSize = 13.sp,
-                color = IosColors.LabelSecondary
+                color = NerColors.NeutralMedium,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (assessment == null) {
-                // Unassessed State Card (No fake score shown!)
+                // Unassessed State Card (Warm 24dp Card)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                    colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, NerColors.NeutralBorder)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(28.dp),
+                            .padding(26.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(90.dp)
+                                .size(88.dp)
                                 .clip(CircleShape)
-                                .background(IosColors.SystemPink.copy(alpha = 0.12f)),
+                                .background(NerColors.TertiaryTint),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Psychology,
                                 contentDescription = null,
-                                tint = IosColors.SystemPink,
-                                modifier = Modifier.size(48.dp)
+                                tint = NerColors.Tertiary,
+                                modifier = Modifier.size(46.dp)
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
                             text = MultilingualManager.tr("lbl_untested", selectedLanguageCode),
-                            fontSize = 20.sp,
+                            fontSize = 19.sp,
                             fontWeight = FontWeight.Bold,
-                            color = IosColors.LabelPrimary
+                            color = NerColors.Charcoal
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -109,39 +125,31 @@ fun CognitiveHealthPanel(
                         Text(
                             text = MultilingualManager.tr("lbl_untested_desc", selectedLanguageCode),
                             fontSize = 13.sp,
-                            color = IosColors.LabelSecondary,
+                            color = NerColors.NeutralMedium,
                             textAlign = TextAlign.Center,
                             lineHeight = 19.sp
                         )
 
-                        Spacer(modifier = Modifier.height(22.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                        Button(
+                        NerPillButton(
+                            text = MultilingualManager.tr("btn_start_test", selectedLanguageCode),
+                            icon = Icons.Default.SportsEsports,
+                            hierarchy = NerButtonHierarchy.Primary,
+                            containerColor = NerColors.Primary,
                             onClick = onLaunchGame,
-                            colors = ButtonDefaults.buttonColors(containerColor = IosColors.SystemOrange),
-                            shape = RoundedCornerShape(14.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                        ) {
-                            Icon(Icons.Default.SportsEsports, contentDescription = null, tint = Color.White)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = MultilingualManager.tr("btn_start_test", selectedLanguageCode),
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             } else {
                 // Calculated CPS Score Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                    colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, NerColors.NeutralBorder)
                 ) {
                     Column(
                         modifier = Modifier
@@ -155,10 +163,10 @@ fun CognitiveHealthPanel(
                                 .clip(CircleShape)
                                 .background(
                                     Brush.radialGradient(
-                                        listOf(IosColors.SystemPink.copy(alpha = 0.15f), Color.Transparent)
+                                        listOf(NerColors.TertiaryTint, Color.Transparent)
                                     )
                                 )
-                                .border(6.dp, IosColors.SystemPink, CircleShape),
+                                .border(6.dp, NerColors.Tertiary, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -166,13 +174,13 @@ fun CognitiveHealthPanel(
                                     text = "${assessment.cpsScore.toInt()}",
                                     fontSize = 42.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = IosColors.SystemPink
+                                    color = NerColors.Tertiary
                                 )
                                 Text(
                                     text = MultilingualManager.tr("health_cps_score", selectedLanguageCode),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = IosColors.LabelSecondary,
+                                    color = NerColors.NeutralMedium,
                                     letterSpacing = 1.sp
                                 )
                             }
@@ -189,24 +197,32 @@ fun CognitiveHealthPanel(
                                     text = "${assessment.functionalCognitiveAge.toInt()} yrs",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = IosColors.SystemBlue
+                                    color = NerColors.Tertiary
                                 )
-                                Text(MultilingualManager.tr("health_cog_age", selectedLanguageCode), fontSize = 11.sp, color = IosColors.LabelSecondary)
+                                Text(
+                                    MultilingualManager.tr("health_cog_age", selectedLanguageCode),
+                                    fontSize = 12.sp,
+                                    color = NerColors.NeutralMedium
+                                )
                             }
                             Box(
                                 modifier = Modifier
                                     .width(1.dp)
                                     .height(32.dp)
-                                    .background(IosColors.Separator)
+                                    .background(NerColors.NeutralBorder)
                             )
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = "${assessment.biologicalAge} yrs",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = IosColors.LabelPrimary
+                                    color = NerColors.Charcoal
                                 )
-                                Text(MultilingualManager.tr("health_bio_age", selectedLanguageCode), fontSize = 11.sp, color = IosColors.LabelSecondary)
+                                Text(
+                                    MultilingualManager.tr("health_bio_age", selectedLanguageCode),
+                                    fontSize = 12.sp,
+                                    color = NerColors.NeutralMedium
+                                )
                             }
                         }
                     }
@@ -214,28 +230,29 @@ fun CognitiveHealthPanel(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Sub-domain Breakdown Card
+                // Sub-domain Breakdown Card with UI Kit Progress Bars
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                    colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, NerColors.NeutralBorder)
                 ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Text(
                             text = MultilingualManager.tr("health_subdomains", selectedLanguageCode),
-                            fontSize = 15.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = IosColors.LabelPrimary
+                            color = NerColors.Charcoal
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        SubScoreRow(MultilingualManager.tr("sub_memory", selectedLanguageCode), assessment.subScores.memoryRetentionIndex, IosColors.SystemBlue)
-                        SubScoreRow(MultilingualManager.tr("sub_executive", selectedLanguageCode), assessment.subScores.executiveFunctionIndex, IosColors.SystemPurple)
-                        SubScoreRow(MultilingualManager.tr("sub_reaction", selectedLanguageCode), assessment.subScores.reactionLatencyScore, IosColors.SystemGreen)
-                        SubScoreRow(MultilingualManager.tr("sub_autobio", selectedLanguageCode), assessment.subScores.autobiographicalReminiscence, IosColors.SystemOrange)
-                        SubScoreRow(MultilingualManager.tr("sub_recovery", selectedLanguageCode), assessment.subScores.errorRecoveryRate, IosColors.SystemTeal)
+                        SubScoreRow(MultilingualManager.tr("sub_memory", selectedLanguageCode), assessment.subScores.memoryRetentionIndex, NerColors.Tertiary)
+                        SubScoreRow(MultilingualManager.tr("sub_executive", selectedLanguageCode), assessment.subScores.executiveFunctionIndex, NerColors.Primary)
+                        SubScoreRow(MultilingualManager.tr("sub_reaction", selectedLanguageCode), assessment.subScores.reactionLatencyScore, NerColors.Secondary)
+                        SubScoreRow(MultilingualManager.tr("sub_autobio", selectedLanguageCode), assessment.subScores.autobiographicalReminiscence, NerColors.Marigold)
+                        SubScoreRow(MultilingualManager.tr("sub_recovery", selectedLanguageCode), assessment.subScores.errorRecoveryRate, NerColors.PlumMaroon)
                     }
                 }
 
@@ -244,19 +261,20 @@ fun CognitiveHealthPanel(
                 // 30 & 90 Days Projections Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                    colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    border = BorderStroke(1.dp, NerColors.NeutralBorder)
                 ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.TrendingUp, contentDescription = null, tint = IosColors.SystemGreen)
+                            Icon(Icons.Default.TrendingUp, contentDescription = null, tint = NerColors.Secondary)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "${MultilingualManager.tr("health_forecast", selectedLanguageCode)}: ${assessment.trajectoryStatus}",
-                                fontSize = 14.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = IosColors.LabelPrimary
+                                color = NerColors.Charcoal
                             )
                         }
 
@@ -267,29 +285,33 @@ fun CognitiveHealthPanel(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column {
-                                Text(MultilingualManager.tr("health_30days", selectedLanguageCode), fontSize = 12.sp, color = IosColors.LabelSecondary)
-                                Text("${assessment.projectedCps30Days} CPS", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.SystemGreen)
+                                Text(MultilingualManager.tr("health_30days", selectedLanguageCode), fontSize = 12.sp, color = NerColors.NeutralMedium)
+                                Text("${assessment.projectedCps30Days} CPS", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NerColors.Secondary)
                             }
                             Column {
-                                Text(MultilingualManager.tr("health_90days", selectedLanguageCode), fontSize = 12.sp, color = IosColors.LabelSecondary)
-                                Text("${assessment.projectedCps90Days} CPS", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.SystemBlue)
+                                Text(MultilingualManager.tr("health_90days", selectedLanguageCode), fontSize = 12.sp, color = NerColors.NeutralMedium)
+                                Text("${assessment.projectedCps90Days} CPS", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NerColors.Tertiary)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
+
                         Text(
                             text = assessment.caregiverReminiscencePlan,
                             fontSize = 12.sp,
-                            color = IosColors.LabelSecondary,
+                            color = NerColors.NeutralMedium,
                             lineHeight = 16.sp
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Accessible Bottom Back Pill
         IosBackPillButton(
             label = MultilingualManager.tr("btn_back", selectedLanguageCode),
             onClick = onBack
@@ -298,24 +320,35 @@ fun CognitiveHealthPanel(
 }
 
 @Composable
-private fun SubScoreRow(label: String, score: Double, color: Color) {
+private fun SubScoreRow(
+    label: String,
+    score: Double,
+    tintColor: Color
+) {
+    val progress = (score / 100.0).coerceIn(0.0, 1.0).toFloat()
     Column(modifier = Modifier.padding(vertical = 5.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = IosColors.LabelPrimary)
-            Text("${score.toInt()}%", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = color)
+            Text(label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = NerColors.Charcoal)
+            Text("${score.toInt()}%", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = tintColor)
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        LinearProgressIndicator(
-            progress = { (score / 100.0).toFloat().coerceIn(0f, 1f) },
+        Spacer(modifier = Modifier.height(5.dp))
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(6.dp)
-                .clip(RoundedCornerShape(3.dp)),
-            color = color,
-            trackColor = IosColors.SystemGroupedBackground
-        )
+                .height(8.dp)
+                .clip(RoundedCornerShape(percent = 50))
+                .background(NerColors.NeutralSoft)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(fraction = progress)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(tintColor)
+            )
+        }
     }
 }

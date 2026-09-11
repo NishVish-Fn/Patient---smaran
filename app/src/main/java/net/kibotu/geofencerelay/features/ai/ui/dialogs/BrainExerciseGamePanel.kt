@@ -1,4 +1,4 @@
-package net.kibotu.geofencerelay.features.ai.ui.dialogs
+﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -37,6 +37,7 @@ import net.kibotu.geofencerelay.features.ai.reminder.GameReminderManager
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
 import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
 import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
+import net.kibotu.geofencerelay.ui.theme.*
 import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
 
 enum class ActiveGameMode {
@@ -143,7 +144,7 @@ private fun GameHubSelectionView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -154,17 +155,27 @@ private fun GameHubSelectionView(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+        // Top Authentic Woven Textile Ribbon
+        NerWovenRibbon(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            height = 14.dp,
+            primaryColor = NerColors.Primary,
+            secondaryColor = NerColors.Secondary,
+            accentColor = NerColors.Marigold
+        )
             Text(
                 text = MultilingualManager.tr("games_hub_title", selectedLanguageCode),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = MultilingualManager.tr("games_hub_sub", selectedLanguageCode),
                 fontSize = 12.sp,
-                color = IosColors.LabelSecondary,
+                color = NerColors.NeutralMedium,
                 textAlign = TextAlign.Center
             )
 
@@ -217,11 +228,11 @@ private fun GameHubSelectionView(
             // Game Reminder Interval Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 border = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(IosColors.CardBorder),
+                    brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder),
                     width = 1.dp
                 )
             ) {
@@ -229,11 +240,11 @@ private fun GameHubSelectionView(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Alarm, contentDescription = null, tint = GoogleColors.Red, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(MultilingualManager.tr("lbl_reminder_interval", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = IosColors.LabelPrimary)
+                        Text(MultilingualManager.tr("lbl_reminder_interval", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 15.sp, color = NerColors.Charcoal)
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(MultilingualManager.tr("lbl_reminder_interval_desc", selectedLanguageCode), fontSize = 11.sp, color = IosColors.LabelSecondary)
+                    Text(MultilingualManager.tr("lbl_reminder_interval_desc", selectedLanguageCode), fontSize = 11.sp, color = NerColors.NeutralMedium)
 
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -251,7 +262,7 @@ private fun GameHubSelectionView(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSel) GoogleColors.Blue else IosColors.TertiarySystemGroupedBackground)
+                                    .background(if (isSel) GoogleColors.Blue else NerColors.NeutralSoft)
                                     .clickable {
                                         reminderInterval = pair.first
                                         GameReminderManager.setReminderInterval(context, pair.first)
@@ -267,7 +278,7 @@ private fun GameHubSelectionView(
                                     text = pair.second,
                                     fontSize = 11.sp,
                                     fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSel) Color.White else IosColors.LabelPrimary
+                                    color = if (isSel) Color.White else NerColors.Charcoal
                                 )
                             }
                         }
@@ -324,13 +335,13 @@ private fun GameSelectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(IosDimensions.CardCornerRadius))
+            .clip(RoundedCornerShape(24.dp))
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-        colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(IosColors.CardBorder),
+            brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder),
             width = 1.dp
         )
     ) {
@@ -353,12 +364,12 @@ private fun GameSelectionCard(
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(desc, fontSize = 11.sp, color = IosColors.LabelSecondary, lineHeight = 15.sp)
+                Text(desc, fontSize = 11.sp, color = NerColors.NeutralMedium, lineHeight = 15.sp)
             }
 
-            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = IosColors.LabelSecondary)
+            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = NerColors.NeutralMedium)
         }
     }
 }
@@ -483,7 +494,7 @@ private fun FullScreenMemoryMatchingGameView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 14.dp, vertical = 10.dp)
@@ -496,7 +507,7 @@ private fun FullScreenMemoryMatchingGameView(
                 text = MultilingualManager.tr("game1_name", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Text(
                 text = "${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxRounds • ${cards.count { it.isMatched } / 2} / $pairsForRound ${MultilingualManager.tr("game1_matched_status", selectedLanguageCode)}",
@@ -526,8 +537,8 @@ private fun FullScreenMemoryMatchingGameView(
                     itemsIndexed(cards) { idx, card ->
                         val cardBg by animateColorAsState(
                             targetValue = if (card.isMatched) GoogleColors.Green.copy(alpha = 0.25f)
-                            else if (card.isFlipped) IosColors.TertiarySystemGroupedBackground
-                            else IosColors.SecondarySystemGroupedBackground,
+                            else if (card.isFlipped) NerColors.NeutralSoft
+                            else NerColors.SurfaceWhite,
                             animationSpec = tween(200),
                             label = "cardBg"
                         )
@@ -550,7 +561,7 @@ private fun FullScreenMemoryMatchingGameView(
                             elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                             border = CardDefaults.outlinedCardBorder().copy(
                                 brush = androidx.compose.ui.graphics.SolidColor(
-                                    if (card.isMatched) GoogleColors.Green else IosColors.CardBorder
+                                    if (card.isMatched) GoogleColors.Green else NerColors.NeutralBorder
                                 ),
                                 width = 1.5.dp
                             )
@@ -674,7 +685,7 @@ private fun FullScreenPatternSequenceGameView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 14.dp, vertical = 10.dp)
@@ -687,7 +698,7 @@ private fun FullScreenPatternSequenceGameView(
                 text = MultilingualManager.tr("game2_name", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Text(
                 text = "${MultilingualManager.tr("lbl_level", selectedLanguageCode)} $currentLevel ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxLevels • $feedbackText",
@@ -750,7 +761,7 @@ private fun FullScreenPatternSequenceGameView(
                         val isLit = isLitBySystem || isLitByUser
 
                         val cardBg by animateColorAsState(
-                            targetValue = if (isLit) item.color else IosColors.SecondarySystemGroupedBackground,
+                            targetValue = if (isLit) item.color else NerColors.SurfaceWhite,
                             animationSpec = tween(150),
                             label = "padBg"
                         )
@@ -812,7 +823,7 @@ private fun FullScreenPatternSequenceGameView(
                             elevation = CardDefaults.cardElevation(defaultElevation = if (isLit) 8.dp else 2.dp),
                             border = CardDefaults.outlinedCardBorder().copy(
                                 brush = androidx.compose.ui.graphics.SolidColor(
-                                    if (isLit) item.color else IosColors.CardBorder
+                                    if (isLit) item.color else NerColors.NeutralBorder
                                 ),
                                 width = if (isLit) 3.dp else 1.dp
                             )
@@ -899,7 +910,7 @@ private fun ColorStroopChallengeGameView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -912,7 +923,7 @@ private fun ColorStroopChallengeGameView(
                 text = MultilingualManager.tr("game3_title", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Text(
                 text = "${MultilingualManager.tr("game3_tap_ink", selectedLanguageCode)} • ${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $totalRounds (${MultilingualManager.tr("lbl_score", selectedLanguageCode)}: $scoreCount)",
@@ -941,10 +952,10 @@ private fun ColorStroopChallengeGameView(
                         .fillMaxWidth()
                         .height(160.dp),
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     border = CardDefaults.outlinedCardBorder().copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(IosColors.CardBorder),
+                        brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder),
                         width = 1.5.dp
                     )
                 ) {
@@ -961,7 +972,7 @@ private fun ColorStroopChallengeGameView(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(MultilingualManager.tr("game3_select_prompt", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+            Text(MultilingualManager.tr("game3_select_prompt", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
 
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -1031,7 +1042,7 @@ private fun AscendingTrailMakingGameView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -1044,7 +1055,7 @@ private fun AscendingTrailMakingGameView(
                 text = MultilingualManager.tr("game4_title", selectedLanguageCode),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Text(
                 text = "${MultilingualManager.tr("lbl_round", selectedLanguageCode)} $currentRound ${MultilingualManager.tr("lbl_of", selectedLanguageCode)} $maxRound • ${MultilingualManager.tr("game4_next_prompt", selectedLanguageCode)}: [$nextExpectedNumber]",
@@ -1088,10 +1099,10 @@ private fun AscendingTrailMakingGameView(
                         val btnBg = when {
                             isCompleted -> GoogleColors.Green
                             isTarget -> GoogleColors.Blue
-                            else -> IosColors.SecondarySystemGroupedBackground
+                            else -> NerColors.SurfaceWhite
                         }
 
-                        val textColor = if (isCompleted || isTarget) Color.White else IosColors.LabelPrimary
+                        val textColor = if (isCompleted || isTarget) Color.White else NerColors.Charcoal
 
                         Card(
                             modifier = Modifier
@@ -1128,7 +1139,7 @@ private fun AscendingTrailMakingGameView(
                             elevation = CardDefaults.cardElevation(defaultElevation = if (isTarget) 6.dp else 2.dp),
                             border = CardDefaults.outlinedCardBorder().copy(
                                 brush = androidx.compose.ui.graphics.SolidColor(
-                                    if (isTarget) GoogleColors.Yellow else IosColors.CardBorder
+                                    if (isTarget) GoogleColors.Yellow else NerColors.NeutralBorder
                                 ),
                                 width = if (isTarget) 3.dp else 1.dp
                             )
@@ -1166,8 +1177,8 @@ private fun VictoryCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 20.dp),
-        shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-        colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -1192,7 +1203,7 @@ private fun VictoryCard(
                 text = MultilingualManager.tr("app_title", selectedLanguageCode),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -1200,7 +1211,7 @@ private fun VictoryCard(
             Text(
                 text = message,
                 fontSize = 14.sp,
-                color = IosColors.LabelSecondary,
+                color = NerColors.NeutralMedium,
                 textAlign = TextAlign.Center,
                 lineHeight = 20.sp
             )

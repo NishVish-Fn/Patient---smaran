@@ -1,7 +1,8 @@
-package net.kibotu.geofencerelay.features.ai.ui.components
+﻿package net.kibotu.geofencerelay.features.ai.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,12 +27,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
+import net.kibotu.geofencerelay.ui.theme.NerColors
 
 /**
- * Signature Apple iOS Assistive Access Bottom "Back" Pill Button.
- * Provides maximum accessibility and touch target size for elderly patients.
+ * Signature Accessible "Back" Pill Button.
+ * Directly adheres to the reference UI kit with high-contrast tactile styling.
  */
 @Composable
 fun IosBackPillButton(
@@ -42,7 +42,7 @@ fun IosBackPillButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1.0f,
+        targetValue = if (isPressed) 0.95f else 1.0f,
         animationSpec = spring(dampingRatio = 0.75f, stiffness = 400f),
         label = "backPressScale"
     )
@@ -50,21 +50,18 @@ fun IosBackPillButton(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(54.dp)
             .scale(scale)
-            .clip(RoundedCornerShape(IosDimensions.PillCornerRadius))
+            .clip(RoundedCornerShape(percent = 50))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             ),
-        shape = RoundedCornerShape(IosDimensions.PillCornerRadius),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(percent = 50),
+        colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(IosColors.CardBorder),
-            width = 1.dp
-        )
+        border = BorderStroke(1.5.dp, NerColors.Primary)
     ) {
         Row(
             modifier = Modifier
@@ -76,15 +73,15 @@ fun IosBackPillButton(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = label,
-                tint = IosColors.SystemBlue,
-                modifier = Modifier.size(24.dp)
+                tint = NerColors.Primary,
+                modifier = Modifier.size(22.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = label,
-                fontSize = 18.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                color = IosColors.SystemBlue
+                color = NerColors.Primary
             )
         }
     }

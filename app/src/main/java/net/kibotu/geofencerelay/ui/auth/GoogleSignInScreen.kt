@@ -43,6 +43,7 @@ import com.google.android.gms.common.api.ApiException
 import net.kibotu.geofencerelay.R
 import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
+import net.kibotu.geofencerelay.ui.theme.*
 import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -176,33 +177,14 @@ fun GoogleSignInScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF0B0914),
-                        Color(0xFF141124),
-                        Color(0xFF0D121B)
-                    )
-                )
-            )
+            .background(NerColors.CanvasWarm)
     ) {
-        // Subtle Regional Folk-Art & Sacred Geometry Background Motif
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-            val strokeColor = saffronGold.copy(alpha = 0.045f)
-
-            drawCircle(
-                color = strokeColor,
-                radius = w * 0.42f,
-                center = Offset(w * 0.5f, h * 0.16f)
-            )
-            drawCircle(
-                color = strokeColor,
-                radius = w * 0.62f,
-                center = Offset(w * 0.5f, h * 0.16f)
-            )
-        }
+        // Subtle Folk Mandala Background Motif
+        NerMandalaWatermark(
+            modifier = Modifier.fillMaxSize(),
+            baseColor = NerColors.Primary,
+            alpha = 0.04f
+        )
 
         Column(
             modifier = Modifier
@@ -338,7 +320,7 @@ fun GoogleSignInScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF161324)),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     border = CardDefaults.outlinedCardBorder().copy(
                         brush = Brush.horizontalGradient(
@@ -479,7 +461,7 @@ fun GoogleSignInScreen(
             // Central Sign-In Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF161324)),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 shape = RoundedCornerShape(22.dp),
                 border = CardDefaults.outlinedCardBorder().copy(
@@ -515,8 +497,8 @@ fun GoogleSignInScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp)
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(Color(0xFF0F0D1B))
-                                    .border(1.dp, Color(0xFF26213A), RoundedCornerShape(14.dp))
+                                    .background(NerColors.CanvasWarm)
+                                    .border(1.dp, NerColors.NeutralBorder, RoundedCornerShape(14.dp))
                                     .clickable {
                                         saveAuthAndProceed(acc)
                                     }
@@ -561,7 +543,7 @@ fun GoogleSignInScreen(
                             .fillMaxWidth()
                             .height(50.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = GoogleColors.Blue
+                            containerColor = NerColors.Primary
                         ),
                         shape = RoundedCornerShape(14.dp),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)

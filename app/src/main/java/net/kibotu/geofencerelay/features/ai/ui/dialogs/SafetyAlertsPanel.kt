@@ -1,9 +1,10 @@
-package net.kibotu.geofencerelay.features.ai.ui.dialogs
+﻿package net.kibotu.geofencerelay.features.ai.ui.dialogs
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,15 +30,15 @@ import androidx.compose.ui.unit.sp
 import net.kibotu.geofencerelay.features.ai.localization.MultilingualManager
 import net.kibotu.geofencerelay.features.ai.model.CpsAssessmentResult
 import net.kibotu.geofencerelay.features.ai.ui.components.IosBackPillButton
-import net.kibotu.geofencerelay.features.ai.ui.theme.GoogleColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
 import net.kibotu.geofencerelay.service.TrackerForegroundService
+import net.kibotu.geofencerelay.ui.theme.*
 
 /**
  * Actionable, life-saving Patient Safety & Emergency Hub.
- * Features 1-Tap SOS (112), 1-Tap Call Caregiver, 1-Tap Take Me Home Navigation (with real address/GPS setup),
- * Bystander Medical Emergency ID, and Live GPS Safe Zone Status.
+ * Adheres to the reference design kit:
+ * - Warm porcelain canvas and authentic woven ribbon banner
+ * - Tactile 24dp white cards and high-contrast Atkinson Hyperlegible typography
+ * - High-visibility 1-Tap SOS (112) in Crimson and Take Me Home Navigation in Terracotta
  */
 @Composable
 fun SafetyAlertsPanel(
@@ -105,11 +106,22 @@ fun SafetyAlertsPanel(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(IosColors.SystemGroupedBackground)
+            .background(NerColors.CanvasWarm)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
+        // Top Authentic Woven Textile Ribbon
+        NerWovenRibbon(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            height = 14.dp,
+            primaryColor = NerColors.Crimson,
+            secondaryColor = NerColors.Secondary,
+            accentColor = NerColors.Marigold
+        )
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -121,13 +133,13 @@ fun SafetyAlertsPanel(
                 text = MultilingualManager.tr("safety_title", selectedLanguageCode),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = IosColors.LabelPrimary
+                color = NerColors.Charcoal
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = MultilingualManager.tr("safety_subtitle", selectedLanguageCode),
-                fontSize = 12.sp,
-                color = IosColors.LabelSecondary,
+                fontSize = 13.sp,
+                color = NerColors.NeutralMedium,
                 textAlign = TextAlign.Center
             )
 
@@ -138,7 +150,7 @@ fun SafetyAlertsPanel(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 1-Tap Emergency SOS (Google Red)
+                // 1-Tap Emergency SOS (Crimson Red)
                 Button(
                     onClick = {
                         try {
@@ -152,19 +164,24 @@ fun SafetyAlertsPanel(
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(64.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Red),
-                    shape = RoundedCornerShape(16.dp),
+                        .height(68.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = NerColors.Crimson),
+                    shape = RoundedCornerShape(20.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Sos, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(MultilingualManager.tr("safety_sos", selectedLanguageCode), fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text(
+                            MultilingualManager.tr("safety_sos", selectedLanguageCode),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
                     }
                 }
 
-                // 1-Tap Call Family / Caregiver (Google Green)
+                // 1-Tap Call Family / Caregiver (Botanical Forest Green)
                 Button(
                     onClick = {
                         if (caregiverPhone.isNotBlank()) {
@@ -182,29 +199,34 @@ fun SafetyAlertsPanel(
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(64.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Green),
-                    shape = RoundedCornerShape(16.dp),
+                        .height(68.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = NerColors.Secondary),
+                    shape = RoundedCornerShape(20.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.PhoneInTalk, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(if (caregiverPhone.isNotBlank()) "CALL FAMILY" else "SET FAMILY #", fontSize = 11.sp, fontWeight = FontWeight.Black, color = Color.White)
+                        Text(
+                            if (caregiverPhone.isNotBlank()) "CALL FAMILY" else "SET FAMILY #",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Take Me Home (1-Tap Navigation)
+            // Take Me Home (1-Tap Navigation in Terracotta Orange)
             Button(
                 onClick = { launchTakeMeHome() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue),
-                shape = RoundedCornerShape(16.dp),
+                    .height(60.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = NerColors.Primary),
+                shape = RoundedCornerShape(20.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 3.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -218,9 +240,9 @@ fun SafetyAlertsPanel(
                             color = Color.White
                         )
                         Text(
-                            text = if (hasHomeSet) "📍 Destination: ${homeAddress.ifBlank { "Saved Coordinates ($homeLat, $homeLon)" }}" else "⚠️ Tap to set your home address or capture GPS",
-                            fontSize = 10.sp,
-                            color = Color.White.copy(alpha = 0.85f),
+                            text = if (hasHomeSet) "ðŸ“ Destination: ${homeAddress.ifBlank { "Saved Coordinates ($homeLat, $homeLon)" }}" else "âš ï¸ Tap to set your home address or capture GPS",
+                            fontSize = 11.sp,
+                            color = Color.White.copy(alpha = 0.9f),
                             maxLines = 1
                         )
                     }
@@ -232,15 +254,12 @@ fun SafetyAlertsPanel(
             // LIVE SAFE ZONE & GPS SENTINEL CARD
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(GoogleColors.Green.copy(alpha = 0.6f)),
-                    width = 1.5.dp
-                )
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                border = BorderStroke(1.5.dp, NerColors.Secondary.copy(alpha = 0.5f))
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -249,28 +268,37 @@ fun SafetyAlertsPanel(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(42.dp)
                                     .clip(CircleShape)
-                                    .background(GoogleColors.Green.copy(alpha = 0.15f)),
+                                    .background(NerColors.SecondaryTint),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Security, contentDescription = null, tint = GoogleColors.Green, modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.Security, contentDescription = null, tint = NerColors.Secondary, modifier = Modifier.size(24.dp))
                             }
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(MultilingualManager.tr("safety_geofence_title", selectedLanguageCode), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
-                                Text(MultilingualManager.tr("safety_geofence_sub", selectedLanguageCode), fontSize = 11.sp, color = IosColors.LabelSecondary)
+                                Text(
+                                    MultilingualManager.tr("safety_geofence_title", selectedLanguageCode),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = NerColors.Charcoal
+                                )
+                                Text(
+                                    MultilingualManager.tr("safety_geofence_sub", selectedLanguageCode),
+                                    fontSize = 12.sp,
+                                    color = NerColors.NeutralMedium
+                                )
                             }
                         }
 
-                        // Live status pulsing badge
+                        // Live status badge
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(GoogleColors.Green.copy(alpha = 0.15f))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .clip(RoundedCornerShape(percent = 50))
+                                .background(NerColors.SecondaryTint)
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Text("● SECURE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = GoogleColors.Green)
+                            Text("â— SECURE", fontSize = 11.sp, fontWeight = FontWeight.Black, color = NerColors.SecondaryDark)
                         }
                     }
 
@@ -278,9 +306,9 @@ fun SafetyAlertsPanel(
 
                     Text(
                         text = MultilingualManager.tr("safety_geofence_desc", selectedLanguageCode),
-                        fontSize = 12.sp,
-                        color = IosColors.LabelSecondary,
-                        lineHeight = 17.sp
+                        fontSize = 13.sp,
+                        color = NerColors.NeutralMedium,
+                        lineHeight = 18.sp
                     )
                 }
             }
@@ -290,35 +318,32 @@ fun SafetyAlertsPanel(
             // MEDICAL EMERGENCY ID & CONTACT CARD
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(IosColors.CardBorder),
-                    width = 1.dp
-                )
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                border = BorderStroke(1.dp, NerColors.NeutralBorder)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.MedicalServices, contentDescription = null, tint = GoogleColors.Red, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.MedicalServices, contentDescription = null, tint = NerColors.Crimson, modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = MultilingualManager.tr("safety_med_id", selectedLanguageCode),
-                                fontSize = 15.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = IosColors.LabelPrimary
+                                color = NerColors.Charcoal
                             )
                         }
                         IconButton(
                             onClick = { showEditDialog = true },
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(34.dp)
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Contact", tint = GoogleColors.Blue, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Contact", tint = NerColors.Primary, modifier = Modifier.size(20.dp))
                         }
                     }
 
@@ -331,8 +356,8 @@ fun SafetyAlertsPanel(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(MultilingualManager.tr("safety_patient_name", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
-                        Text(patientName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = IosColors.LabelPrimary)
+                        Text(MultilingualManager.tr("safety_patient_name", selectedLanguageCode), fontSize = 13.sp, color = NerColors.NeutralMedium)
+                        Text(patientName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = NerColors.Charcoal)
                     }
 
                     // Condition
@@ -342,8 +367,13 @@ fun SafetyAlertsPanel(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(MultilingualManager.tr("safety_condition", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
-                        Text(MultilingualManager.tr("safety_condition_desc", selectedLanguageCode), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = GoogleColors.Yellow)
+                        Text(MultilingualManager.tr("safety_condition", selectedLanguageCode), fontSize = 13.sp, color = NerColors.NeutralMedium)
+                        Text(
+                            MultilingualManager.tr("safety_condition_desc", selectedLanguageCode),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = NerColors.PrimaryDark
+                        )
                     }
 
                     // Primary Caregiver
@@ -353,12 +383,12 @@ fun SafetyAlertsPanel(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(MultilingualManager.tr("safety_caregiver", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
+                        Text(MultilingualManager.tr("safety_caregiver", selectedLanguageCode), fontSize = 13.sp, color = NerColors.NeutralMedium)
                         Text(
-                            text = if (caregiverPhone.isNotBlank()) "$caregiverName ($caregiverPhone)" else "$caregiverName (Tap ✏️ to add)",
+                            text = if (caregiverPhone.isNotBlank()) "$caregiverName ($caregiverPhone)" else "$caregiverName (Tap âœï¸ to add)",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (caregiverPhone.isNotBlank()) GoogleColors.Green else GoogleColors.Blue
+                            color = if (caregiverPhone.isNotBlank()) NerColors.SecondaryDark else NerColors.Primary
                         )
                     }
 
@@ -370,25 +400,25 @@ fun SafetyAlertsPanel(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(MultilingualManager.tr("safety_address", selectedLanguageCode), fontSize = 13.sp, color = IosColors.LabelSecondary)
+                        Text(MultilingualManager.tr("safety_address", selectedLanguageCode), fontSize = 13.sp, color = NerColors.NeutralMedium)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = if (hasHomeSet) homeAddress.ifBlank { "GPS Coordinates Saved" } else "Not configured",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (hasHomeSet) IosColors.LabelPrimary else GoogleColors.Yellow
+                                color = if (hasHomeSet) NerColors.Charcoal else NerColors.PrimaryDark
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "📍 Set",
+                                text = "ðŸ“ Set",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = GoogleColors.Blue,
+                                color = NerColors.Primary,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(GoogleColors.Blue.copy(alpha = 0.15f))
+                                    .background(NerColors.PrimaryTint)
                                     .clickable { showEditDialog = true }
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
                             )
                         }
                     }
@@ -400,16 +430,17 @@ fun SafetyAlertsPanel(
             // DAILY WELLNESS & CARE CHECKLIST
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-                colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                border = BorderStroke(1.dp, NerColors.NeutralBorder)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Text(
                         text = MultilingualManager.tr("safety_wellness", selectedLanguageCode),
-                        fontSize = 15.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = IosColors.LabelPrimary
+                        color = NerColors.Charcoal
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -418,25 +449,34 @@ fun SafetyAlertsPanel(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(IosColors.SystemGroupedBackground)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (medTaken) NerColors.SecondaryTint else NerColors.NeutralSoft)
                             .clickable { medTaken = !medTaken }
-                            .padding(12.dp),
+                            .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Medication, contentDescription = null, tint = GoogleColors.Red, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Medication, contentDescription = null, tint = NerColors.Crimson, modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(MultilingualManager.tr("safety_meds", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = IosColors.LabelPrimary)
-                                Text(if (medTaken) "Taken today ✓" else "Tap to mark taken", fontSize = 11.sp, color = if (medTaken) GoogleColors.Green else IosColors.LabelSecondary)
+                                Text(
+                                    MultilingualManager.tr("safety_meds", selectedLanguageCode),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = NerColors.Charcoal
+                                )
+                                Text(
+                                    if (medTaken) "Taken today âœ“" else "Tap to mark taken",
+                                    fontSize = 11.sp,
+                                    color = if (medTaken) NerColors.SecondaryDark else NerColors.NeutralMedium
+                                )
                             }
                         }
                         Icon(
                             imageVector = if (medTaken) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                             contentDescription = null,
-                            tint = if (medTaken) GoogleColors.Green else IosColors.LabelSecondary
+                            tint = if (medTaken) NerColors.Secondary else NerColors.NeutralMedium
                         )
                     }
 
@@ -446,25 +486,34 @@ fun SafetyAlertsPanel(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(IosColors.SystemGroupedBackground)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (waterTaken) NerColors.TertiaryTint else NerColors.NeutralSoft)
                             .clickable { waterTaken = !waterTaken }
-                            .padding(12.dp),
+                            .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.WaterDrop, contentDescription = null, tint = GoogleColors.Blue, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.WaterDrop, contentDescription = null, tint = NerColors.Tertiary, modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(MultilingualManager.tr("safety_hydration", selectedLanguageCode), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = IosColors.LabelPrimary)
-                                Text(if (waterTaken) "Drank water ✓" else "Tap to mark completed", fontSize = 11.sp, color = if (waterTaken) GoogleColors.Green else IosColors.LabelSecondary)
+                                Text(
+                                    MultilingualManager.tr("safety_hydration", selectedLanguageCode),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = NerColors.Charcoal
+                                )
+                                Text(
+                                    if (waterTaken) "Drank water âœ“" else "Tap to mark completed",
+                                    fontSize = 11.sp,
+                                    color = if (waterTaken) NerColors.TertiaryDark else NerColors.NeutralMedium
+                                )
                             }
                         }
                         Icon(
                             imageVector = if (waterTaken) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                             contentDescription = null,
-                            tint = if (waterTaken) GoogleColors.Blue else IosColors.LabelSecondary
+                            tint = if (waterTaken) NerColors.Tertiary else NerColors.NeutralMedium
                         )
                     }
                 }
@@ -473,7 +522,7 @@ fun SafetyAlertsPanel(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        // Apple iOS Assistive Access Back Button
+        // Accessible Bottom Back Pill
         IosBackPillButton(
             label = MultilingualManager.tr("btn_back", selectedLanguageCode),
             onClick = onBack
@@ -490,15 +539,22 @@ fun SafetyAlertsPanel(
 
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
+            containerColor = NerColors.SurfaceWhite,
+            shape = RoundedCornerShape(24.dp),
             title = {
-                Text(MultilingualManager.tr("safety_dialog_title", selectedLanguageCode), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = IosColors.LabelPrimary)
+                Text(
+                    MultilingualManager.tr("safety_dialog_title", selectedLanguageCode),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = NerColors.Charcoal
+                )
             },
             text = {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     Text(
                         "Set caregiver phone and home location. The 'TAKE ME HOME' button uses this exact location for walking directions.",
                         fontSize = 12.sp,
-                        color = IosColors.LabelSecondary
+                        color = NerColors.NeutralMedium
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
@@ -519,14 +575,18 @@ fun SafetyAlertsPanel(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text("${MultilingualManager.tr("btn_set_home", selectedLanguageCode)}:", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = IosColors.LabelPrimary)
+                    Text(
+                        "${MultilingualManager.tr("btn_set_home", selectedLanguageCode)}:",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = NerColors.Charcoal
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
 
                     OutlinedTextField(
                         value = tempAddress,
                         onValueChange = {
                             tempAddress = it
-                            // Clear exact coordinates if user manually enters address string
                             tempLat = 0.0
                             tempLon = 0.0
                         },
@@ -556,8 +616,8 @@ fun SafetyAlertsPanel(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Green),
-                        shape = RoundedCornerShape(10.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = NerColors.Secondary),
+                        shape = RoundedCornerShape(percent = 50)
                     ) {
                         Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                         Spacer(modifier = Modifier.width(6.dp))
@@ -569,13 +629,16 @@ fun SafetyAlertsPanel(
                         Text(
                             text = String.format(java.util.Locale.US, "GPS: %.5f, %.5f", tempLat, tempLon),
                             fontSize = 11.sp,
-                            color = GoogleColors.Green
+                            color = NerColors.SecondaryDark
                         )
                     }
                 }
             },
             confirmButton = {
-                Button(
+                NerPillButton(
+                    text = MultilingualManager.tr("btn_save_home", selectedLanguageCode),
+                    hierarchy = NerButtonHierarchy.Primary,
+                    containerColor = NerColors.Primary,
                     onClick = {
                         caregiverName = tempName
                         caregiverPhone = tempPhone
@@ -588,19 +651,18 @@ fun SafetyAlertsPanel(
                             .putString("home_address", tempAddress)
                             .putFloat("home_lat", tempLat.toFloat())
                             .putFloat("home_lon", tempLon.toFloat())
-                            .apply()
+                            .commit()
                         showEditDialog = false
                         Toast.makeText(context, "Home location & caregiver saved!", Toast.LENGTH_SHORT).show()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = GoogleColors.Blue)
-                ) {
-                    Text(MultilingualManager.tr("btn_save_home", selectedLanguageCode), color = Color.White, fontWeight = FontWeight.Bold)
-                }
+                    }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) {
-                    Text(MultilingualManager.tr("mv_cancel", selectedLanguageCode), color = IosColors.LabelSecondary)
-                }
+                NerPillButton(
+                    text = MultilingualManager.tr("mv_cancel", selectedLanguageCode),
+                    hierarchy = NerButtonHierarchy.Secondary,
+                    onClick = { showEditDialog = false }
+                )
             }
         )
     }

@@ -1,7 +1,8 @@
-package net.kibotu.geofencerelay.features.ai.ui.components
+﻿package net.kibotu.geofencerelay.features.ai.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -28,12 +30,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosColors
-import net.kibotu.geofencerelay.features.ai.ui.theme.IosDimensions
+import net.kibotu.geofencerelay.ui.theme.NerColors
 
 /**
- * High-fidelity Apple iOS Assistive Access Springboard Tile.
- * Directly replicates the layout, dimensions, and typography of the reference photo.
+ * Vibrant, High-Aesthetic Card adhering to the reference design kit and regional cultural motifs.
+ * Features 24dp rounded squircle contour, pure white warm card face, subtle border,
+ * tactile spring press animation, and vibrant jewel-tone squircle icon badge.
  */
 @Composable
 fun IosSpringboardCard(
@@ -44,7 +46,7 @@ fun IosSpringboardCard(
     customIconContent: (@Composable () -> Unit)? = null,
     badgeText: String? = null,
     badgeIcon: ImageVector? = null,
-    badgeColor: Color = IosColors.SystemBlue,
+    badgeColor: Color = NerColors.Tertiary,
     statusSubtitle: String? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
@@ -52,7 +54,7 @@ fun IosSpringboardCard(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1.0f,
+        targetValue = if (isPressed) 0.95f else 1.0f,
         animationSpec = spring(dampingRatio = 0.75f, stiffness = 400f),
         label = "cardPressScale"
     )
@@ -60,7 +62,7 @@ fun IosSpringboardCard(
     Box(
         modifier = modifier
             .scale(scale)
-            .clip(RoundedCornerShape(IosDimensions.CardCornerRadius))
+            .clip(RoundedCornerShape(24.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -72,15 +74,10 @@ fun IosSpringboardCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = if (badgeText != null) 10.dp else 0.dp),
-            shape = RoundedCornerShape(IosDimensions.CardCornerRadius),
-            colors = CardDefaults.cardColors(containerColor = IosColors.SecondarySystemGroupedBackground),
-            elevation = CardDefaults.cardElevation(defaultElevation = IosDimensions.CardElevation),
-            border = CardDefaults.outlinedCardBorder().copy(
-                brush = Brush.verticalGradient(
-                    listOf(IosColors.CardBorder, IosColors.CardBorder.copy(alpha = 0.6f))
-                ),
-                width = 1.dp
-            )
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+            border = BorderStroke(1.dp, NerColors.NeutralBorder)
         ) {
             Column(
                 modifier = Modifier
@@ -89,16 +86,20 @@ fun IosSpringboardCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Large iOS Squircle App Icon
+                // Vibrant Squircle App Icon Badge
                 Box(
                     modifier = Modifier
-                        .size(76.dp)
-                        .clip(RoundedCornerShape(IosDimensions.IconSquircleCornerRadius))
-                        .background(iconBgColor)
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(iconBgColor, iconBgColor.copy(alpha = 0.88f))
+                            )
+                        )
                         .border(
-                            width = 0.5.dp,
-                            color = Color(0x22000000),
-                            shape = RoundedCornerShape(IosDimensions.IconSquircleCornerRadius)
+                            width = 1.dp,
+                            color = Color(0x18000000),
+                            shape = RoundedCornerShape(20.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -109,30 +110,30 @@ fun IosSpringboardCard(
                             imageVector = icon,
                             contentDescription = title,
                             tint = iconTint,
-                            modifier = Modifier.size(42.dp)
+                            modifier = Modifier.size(38.dp)
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Bold Clean iOS SF Pro Label
+                // High-Contrast Atkinson Hyperlegible Label
                 Text(
                     text = title,
-                    fontSize = 18.sp,
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    color = IosColors.LabelPrimary,
+                    color = NerColors.Charcoal,
                     textAlign = TextAlign.Center,
                     maxLines = 1
                 )
 
                 if (statusSubtitle != null) {
-                    Spacer(modifier = Modifier.height(3.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = statusSubtitle,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = IosColors.LabelSecondary,
+                        color = NerColors.NeutralMedium,
                         textAlign = TextAlign.Center,
                         maxLines = 1
                     )
@@ -140,15 +141,15 @@ fun IosSpringboardCard(
             }
         }
 
-        // Apple iOS Assistive Access Pill Badge (e.g. "🔔 New" badge from reference photo)
+        // Pill Badge adhering to the reference kit
         if (badgeText != null) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .clip(RoundedCornerShape(IosDimensions.PillCornerRadius))
+                    .clip(RoundedCornerShape(percent = 50))
                     .background(badgeColor)
-                    .border(1.5.dp, Color.White, RoundedCornerShape(IosDimensions.PillCornerRadius))
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                    .border(1.5.dp, Color.White, RoundedCornerShape(percent = 50))
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

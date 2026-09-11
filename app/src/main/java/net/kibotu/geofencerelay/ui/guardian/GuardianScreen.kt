@@ -1,4 +1,4 @@
-package net.kibotu.geofencerelay.ui.guardian
+﻿package net.kibotu.geofencerelay.ui.guardian
 
 import android.Manifest
 import android.content.Context
@@ -93,7 +93,7 @@ fun GuardianScreen(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(IrctcSaffron),
+                                .background(NerColors.Primary),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -114,7 +114,7 @@ fun GuardianScreen(
                             Text(
                                 googleAccountEmail,
                                 fontSize = 12.sp,
-                                color = IrctcGold
+                                color = NerColors.Marigold
                             )
                         }
                     }
@@ -130,7 +130,7 @@ fun GuardianScreen(
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(if (isConnected) IrctcGreen else IrctcRed)
+                            .background(if (isConnected) NerColors.Secondary else NerColors.Crimson)
                             .clickable { vm.reconnect() }
                             .padding(horizontal = 10.dp, vertical = 5.dp)
                     ) {
@@ -151,7 +151,7 @@ fun GuardianScreen(
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Sign Out", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = IrctcNavy)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = NerColors.PrimaryDark)
             )
         }
     ) { padding ->
@@ -159,8 +159,18 @@ fun GuardianScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(IrctcCanvas)
+                .background(NerColors.CanvasWarm)
         ) {
+            // Top Woven Ribbon
+            NerWovenRibbon(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                height = 12.dp,
+                primaryColor = NerColors.Primary,
+                secondaryColor = NerColors.Secondary,
+                accentColor = NerColors.Marigold
+            )
             // Interactive Map View
             OsmMapView(
                 modifier = Modifier.fillMaxSize(),
@@ -187,7 +197,7 @@ fun GuardianScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = IrctcRed),
+                    colors = CardDefaults.cardColors(containerColor = NerColors.Crimson),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
@@ -223,8 +233,8 @@ fun GuardianScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(bottom = 270.dp, end = 16.dp),
-                containerColor = IrctcCardBg,
-                contentColor = IrctcRoyal,
+                containerColor = NerColors.SurfaceWhite,
+                contentColor = NerColors.Tertiary,
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
             ) {
@@ -236,10 +246,10 @@ fun GuardianScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = IrctcCardBg),
+                colors = CardDefaults.cardColors(containerColor = NerColors.SurfaceWhite),
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 14.dp),
-                border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(IrctcCardBorder))
+                border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(NerColors.NeutralBorder))
             ) {
                 Column(
                     modifier = Modifier
@@ -251,7 +261,7 @@ fun GuardianScreen(
                         modifier = Modifier
                             .size(36.dp, 4.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(IrctcCardBorder)
+                            .background(NerColors.NeutralBorder)
                             .align(Alignment.CenterHorizontally)
                     )
 
@@ -268,13 +278,13 @@ fun GuardianScreen(
                                 text = targetPing?.deviceName ?: "Locating Beacon...",
                                 fontSize = 17.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = IrctcTextPrimary
+                                color = NerColors.Charcoal
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = targetPing?.address ?: "Acquiring live GPS fix...",
                                 fontSize = 12.sp,
-                                color = IrctcTextSecondary,
+                                color = NerColors.NeutralMedium,
                                 maxLines = 1
                             )
                         }
@@ -284,7 +294,7 @@ fun GuardianScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(
-                                    if (isBreached) IrctcRed else IrctcGreen
+                                    if (isBreached) NerColors.Crimson else NerColors.Secondary
                                 )
                                 .padding(horizontal = 10.dp, vertical = 5.dp)
                         ) {
@@ -306,26 +316,26 @@ fun GuardianScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(IrctcCanvas)
-                                .border(1.dp, IrctcCardBorder, RoundedCornerShape(10.dp))
+                                .background(NerColors.CanvasWarm)
+                                .border(1.dp, NerColors.NeutralBorder, RoundedCornerShape(10.dp))
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
                                 "Dist: ${LocationUtils.formatDistance(targetPing!!.distanceFromCenter)}",
                                 fontSize = 12.sp,
-                                color = IrctcRoyal,
+                                color = NerColors.Tertiary,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 "Speed: ${LocationUtils.formatSpeed(targetPing!!.speed)}",
                                 fontSize = 12.sp,
-                                color = IrctcTextSecondary
+                                color = NerColors.NeutralMedium
                             )
                             Text(
                                 if (lastSeen == "Just now") "Live Ping" else "Seen: $lastSeen",
                                 fontSize = 12.sp,
-                                color = if (lastSeen == "Just now") IrctcGreen else IrctcTextSecondary,
+                                color = if (lastSeen == "Just now") NerColors.Secondary else NerColors.NeutralMedium,
                                 fontWeight = if (lastSeen == "Just now") FontWeight.Bold else FontWeight.Normal
                             )
                         }
@@ -351,7 +361,7 @@ fun GuardianScreen(
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(CircleShape)
-                                    .background(if (isPlayingSound) IrctcRed else IrctcRoyal),
+                                    .background(if (isPlayingSound) NerColors.Crimson else NerColors.Tertiary),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Play Sound", tint = Color.White)
@@ -361,7 +371,7 @@ fun GuardianScreen(
                                 if (isPlayingSound) "Stop Sound" else "Play Sound",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = IrctcTextPrimary
+                                color = NerColors.Charcoal
                             )
                         }
 
@@ -392,13 +402,13 @@ fun GuardianScreen(
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(CircleShape)
-                                    .background(IrctcLightBlue),
+                                    .background(NerColors.TertiaryLight),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(Icons.Default.Directions, contentDescription = "Directions", tint = Color.White)
                             }
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text("Directions", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = IrctcTextPrimary)
+                            Text("Directions", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = NerColors.Charcoal)
                         }
 
                         // 3. Safe Zone Setup
@@ -414,13 +424,13 @@ fun GuardianScreen(
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(CircleShape)
-                                    .background(if (showZoneEditor) IrctcSaffron else IrctcNavy),
+                                    .background(if (showZoneEditor) NerColors.Primary else NerColors.PrimaryDark),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(Icons.Default.Security, contentDescription = "Safe Zone", tint = Color.White)
                             }
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text("Safe Zone", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = IrctcTextPrimary)
+                            Text("Safe Zone", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = NerColors.Charcoal)
                         }
 
                         // 4. Recenter & Sync
@@ -436,13 +446,13 @@ fun GuardianScreen(
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(CircleShape)
-                                    .background(IrctcRoyal),
+                                    .background(NerColors.Tertiary),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(Icons.Default.MyLocation, contentDescription = "Recenter Radar", tint = Color.White)
                             }
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text("Center Radar", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = IrctcTextPrimary)
+                            Text("Center Radar", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = NerColors.Charcoal)
                         }
                     }
 
@@ -452,8 +462,8 @@ fun GuardianScreen(
                             modifier = Modifier
                                 .padding(top = 16.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(IrctcCanvas)
-                                .border(1.dp, IrctcCardBorder, RoundedCornerShape(16.dp))
+                                .background(NerColors.CanvasWarm)
+                                .border(1.dp, NerColors.NeutralBorder, RoundedCornerShape(16.dp))
                                 .padding(16.dp)
                         ) {
                             Row(
@@ -465,11 +475,11 @@ fun GuardianScreen(
                                     "Geofence Configuration",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
-                                    color = IrctcTextPrimary
+                                    color = NerColors.Charcoal
                                 )
                                 Text(
                                     "${sliderRadius.toInt()} m radius",
-                                    color = IrctcRoyal,
+                                    color = NerColors.Tertiary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
                                 )
@@ -480,7 +490,7 @@ fun GuardianScreen(
                             Text(
                                 "Tap anywhere on the map to place center coordinate. Adjust boundary radius with the slider below.",
                                 fontSize = 11.sp,
-                                color = IrctcTextSecondary,
+                                color = NerColors.NeutralMedium,
                                 lineHeight = 16.sp
                             )
 
@@ -494,9 +504,9 @@ fun GuardianScreen(
                                 },
                                 valueRange = 50f..2000f,
                                 colors = SliderDefaults.colors(
-                                    thumbColor = IrctcSaffron,
-                                    activeTrackColor = IrctcSaffron,
-                                    inactiveTrackColor = IrctcCardBorder
+                                    thumbColor = NerColors.Primary,
+                                    activeTrackColor = NerColors.Primary,
+                                    inactiveTrackColor = NerColors.NeutralBorder
                                 )
                             )
 
@@ -518,7 +528,7 @@ fun GuardianScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(46.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = IrctcGreen),
+                                colors = ButtonDefaults.buttonColors(containerColor = NerColors.Secondary),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
